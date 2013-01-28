@@ -1,0 +1,29 @@
+=== au1997enlarging
+Vector computers are good for flat data parallelism, which requires regular data, and so languages like Fortran only support rectangular array parallelism. Nested data parallelism can be converted to flat data parallelism with a /flattening/ transform. An extension to Fortran 90 is shown that flattens nested data parallelism, allowing existing optimising Fortran compilers to use the vector machinery.
+ETC.
+
+=== keller1998flattening
+Problem: NESL etc flattening transform only supports homogenous vectors, so trees are awkward to program.
+The flattening transform is extended to allow user-defined recursive types.
+
+=== keller1999distributed
+Separating local from global computations, so that fusion can be applied to only local computations.
+--REREAD
+
+=== chakravarty1999portable
+NDP that works for vector/scalar, shared/distributed memory systems.
+
+=== chakravarty2000more
+Blelloch & Sabot's original flattening transformation didn't support general sum types, recursive types, or higher-order functions. Recursive types have been shown in \cite{keller1998flattening}.
+This generalises flattening to support the full range of types in Haskell.
+By formalising the flattening transformation in a lambda calculus they are able to easier express separate compilation.
+
+
+
+== TODO: find
+G. E. Blelloch (& NESL)
+
+Chatterjee -- maybe not
+Sabot
+
+Barnes & Hut, 1986
