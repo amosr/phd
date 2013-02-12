@@ -19,11 +19,47 @@ This generalises flattening to support the full range of types in Haskell.
 By formalising the flattening transformation in a lambda calculus they are able to easier express separate compilation.
 
 
+=== barnes1986hierarchical
+Distribute N-body problem into a heirarchical octree, allowing n log n instead of n^2 interactions.
+Existing hierarchical N-body simulations exist (Appel, Jernigan, Porter) but the loss in accuracy is hard to analyse. Is this because the tree structure is not necessarily a space partitioning?
+A better idea of where the accuracy errors are is possible because the octree is an up-to-date space partitioning.
+
+=== barnes1990modified
+A modification of Barnes-Hut that is better for vector machines. By sharing some of the 'interaction list' between nearby particles.
+Meh.
+
+
+=== peyton2007call
+SpecConstr is an optimisation that specialises recursive functions to remove unnecessary allocation and pattern-matching of constructors.
+When a recursive function pattern matches or destructs one of its arguments and makes a recursive call with a constructor of that argument,
+the recursive call can be specialised for that particular argument so no allocation or unboxing is necessary.
+This is done in three stages;
+ 1. Identify the call patterns: recursive function call, with at least one argument being a constructor application that is pattern-matched elsewhere in the body.
+ 2. Specialise: the function is copied and simplified for the case of that particular constructor argument
+ 3. Propagate: the existing rewrite rule system is used to find any calls to the functions with known constructors as arguments, and rewritten to call the specialised version.
+Additional refinements are used to decide which functions to specialise. This is a trade-off between runtime efficiency and code explosion:
+ 1. take into account variables that have been let-bound or pattern matches, when used as arguments
+ 2. record nested pattern matches
+ 3. when specialising a function, collect new patterns from the specialised right-hand side
+ 4. mutual recursion
+There is a potential problem with reboxing: when an argument may be specialised but is used as an argument to another function, specialisation may perform more allocation.
+
+
+=== blelloch1989scans
+If distributed vector machines implemented scan operations on vectors, much time could be saved that would otherwise be spent waiting for memory accesses to return.
+Explanation of radix sort example.
+Segmented scan operations use a vector of flags the same length as the values. I guess this totally disallows empty segments, which makes sense. True flag indicates the start of a segment. What happens if there is no True flag at the start..?
+Clever implementation of Quicksort using segmented scans and iteratively splitting each segment into more subsegments. Using the segment flag representation allows very easy splitting.
+It seems quite disingenuous to claim ``constant time for a vector of size n, provided there are n nodes in the machine''. It does deal with this eventually though, in the load-balancing section.
+Hardware description of a tree scan.
+
 
 == TODO: find
-G. E. Blelloch (& NESL)
 
 Chatterjee -- maybe not
 Sabot
 
-Barnes & Hut, 1986
+
+== TODO?books
+Neil D. Jones. Partial Evaluation and Automatic Program Generation. 1993
+
