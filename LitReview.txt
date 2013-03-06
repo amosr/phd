@@ -53,6 +53,24 @@ Clever implementation of Quicksort using segmented scans and iteratively splitti
 It seems quite disingenuous to claim ``constant time for a vector of size n, provided there are n nodes in the machine''. It does deal with this eventually though, in the load-balancing section.
 Hardware description of a tree scan.
 
+=== blelloch1990vector
+Book covering scan primitives and basic vectorisation/flattening.
+
+=== thiemann1993avoiding "Avoiding repeated tests in pattern matching"
+Very similar to SpecConstr, except for a strict functional language.
+Really there's no difference that it's strict.
+Explains semantics of a small first-order subset of ML and then shows implementation of specialisation.
+First an environment is built up of call patterns of recursive calls, then those cases are specialised.
+
+=== burstall1977transformation "A transformation system for developing recursive programs"
+Very interesting system of unfolding and then folding recursive definitions.
+With some cleverness they are able to rewrite several recursive calls into a single recursion.
+Seems reminiscent of tupling.
+However, it seems to require user intervention and relies on domain knowledge such as commutativity of addition.
+
+
+=== stephens1997survey "A survey of stream processing"
+
 
 == TODO: find
 
