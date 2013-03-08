@@ -18,6 +18,15 @@ Blelloch & Sabot's original flattening transformation didn't support general sum
 This generalises flattening to support the full range of types in Haskell.
 By formalising the flattening transformation in a lambda calculus they are able to easier express separate compilation.
 
+=== chakravarty2001functional "Functional Array Fusion"
+Fusion on unboxed arrays. Two combinators are used: loopP and replicateP.
+loopP is a complicated loop that is a combination of filter, map, segmented fold, etc.
+@replicateP n e@ simply creates an array of length @n@ full of elements @e@.
+Rewrite rules are used to fuse adjacent loops and replicates; a loop over a replicate is
+fused into a simple replicate of unit, since that is very cheap.
+
+=== chakravarty2001nepal "Nepal - Nested Data-Parallelism in Haskell"
+
 
 === barnes1986hierarchical
 Distribute N-body problem into a heirarchical octree, allowing n log n instead of n^2 interactions.
@@ -55,6 +64,22 @@ Hardware description of a tree scan.
 
 === blelloch1990vector
 Book covering scan primitives and basic vectorisation/flattening.
+Must reread this to understand the flattening they use.
+
+=== blelloch1991comparison
+Different sorting algorithms are implemented and compared for the connection machine. Irrelevant.
+
+=== blelloch1993implementation
+Goes through the implementation of NESL, but only the VCODE (virtual machine) and CVL (parallel primitives library).
+Doesn't actually talk about flattening or vectorisation.
+Irrelevant.
+
+=== blelloch1995nesl
+This is more like a user guide / tutorial for programming in NESL, rather than any information about how it is implemented.
+
+=== blelloch1996programming
+More example programs in NESL...
+
 
 === thiemann1993avoiding "Avoiding repeated tests in pattern matching"
 Very similar to SpecConstr, except for a strict functional language.
@@ -70,6 +95,34 @@ However, it seems to require user intervention and relies on domain knowledge su
 
 
 === stephens1997survey "A survey of stream processing"
+Stream processing systems can be thought of as a directed graph,
+but provides a more rigorous formal definition.
+Goes through many languages showing their primitive operations and
+implementing a flip-flop in each. 
+Many variations. Many references to other papers.
+
+=== bechet1994limix "Limix: a partial evaluator for partially static structures"
+Splits function specialisation from dead-variable elimination.
+This solves a problem with nested structures that ``standard specialisers'' apparently do not treat.
+May be some relation to the `reallocation problem' we have in GHC, but I'm not certain about that.
+
+
+=== scholz1998defining
+Single assignment C with special loop operation.
+Not really sure.
+
+=== johnston2004advances "Advances in Dataflow Programming Languages"
+Broad overview of different dataflow based languages.
+Originally targetting dataflow computers but also von Neumann. Eh.
+
+=== wang2013loop "Loop scheduling with memory access reduction subject to register constraints for DSP applications"
+Quite low-level, working on assembly language.
+Reduce memory accesses in cases where a specific array element is used in successive iterations.
+  for (int i =...)
+    k[i] = k[i] * k[i+1];
+The memory access for k[i+1] should be stored in a register and kept for the next iteration's k[i].
+Build a DAG out of loop body (with no loop ??), then create a memory access graph (MAG) to describe the memory dependence of operations over successive iterations.
+After the MAG is created, a register usage scheduling is created and used to decide which registers to use.
 
 
 == TODO: find
