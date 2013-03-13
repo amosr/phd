@@ -1,0 +1,29 @@
+$wmain_foo_manual2
+$wmain_foo_manual2 =
+  \ ww_sFD w_sFF ->
+    case <# ww_sFD 10 of _ {
+      False -> [];
+      True ->
+        let { I# x_sFI ~ wild1_sFL <- w_sFF } in
+        case <# x_sFI 11 of _ {
+          False -> [];
+          True ->
+            let {
+              sat_sGe
+              sat_sGe =
+                let { __DEFAULT ~ sat_sFQ <- +# x_sFI 1 } in
+                let {
+                  sat_sFS
+                  sat_sFS = I# sat_sFQ } in
+                let { __DEFAULT ~ sat_sFT <- +# ww_sFD 1 } in
+                $wmain_foo_manual2 sat_sFT sat_sFS } in
+            let {
+              sat_sFM
+              sat_sFM = I# ww_sFD } in
+            let {
+              sat_sGf
+              sat_sGf = (sat_sFM, wild1_sFL) } in
+            : sat_sGf sat_sGe
+        }
+    }
+

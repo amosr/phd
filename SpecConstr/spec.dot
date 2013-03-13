@@ -1,0 +1,49 @@
+digraph EZipE {
+    rankdir=LR;
+    node [shape = doublecircle]; IIN IIJI;
+    node [shape = circle];
+    _ -> IIN;
+    _ -> I_JI;
+    _ -> _IN;
+
+    IIN -> IIJI;
+    _IN -> IIJI;
+
+    IIJI -> IIN;
+}
+
+digraph AppZipApp {
+    rankdir=LR;
+    node [shape = doublecircle]; LIRIN LILIN RIRIN RILIN LIRIJI RIRIJI LILIJI RILIJI;
+    node [shape = circle];
+    _ -> RI_N;
+    _ -> LI_JI;
+    _ -> RI_JI;
+    _ -> _RIN;
+    _ -> _LIN;
+
+    RI_N -> RI_JI;
+    LI_JI -> LIRIN;
+    LI_JI -> LILIN;
+    RI_JI -> RIRIN;
+    RI_JI -> RILIN;
+    _RIN -> RIRIN;
+    _RIN -> LIRIJI;
+    _RIN -> RIRIJI;
+    _LIN -> RILIN;
+    _LIN -> LILIJI;
+    _LIN -> RILIJI;
+
+    LIRIN -> RIRIN;
+    LIRIN -> LIRIJI;
+    LILIN -> RILIN;
+    LILIN -> LILIJI;
+    RIRIN -> RIRIJI;
+    RILIN -> RILIJI;
+    LIRIJI -> LIRIN;
+    RIRIJI -> RIRIN;
+    LILIJI -> LIRIN;
+    LILIJI -> LILIN;
+    RILIJI -> RIRIN;
+    RILIJI -> RILIN;
+}

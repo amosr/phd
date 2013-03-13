@@ -1,0 +1,43 @@
+$wunfold a b c =
+    case c of _ {
+      Nothing ->
+        case a of _ {
+          Left a' ->
+            let { I# a# = a' } in
+            case <# a# 10 of _ {
+              False -> $wunfold (Right (I# 1)) b Nothing;
+              True  -> $wunfold (Left (I# (+# a# 1))) b (Just (I# a#))
+            };
+          Right a' ->
+            let { I# a# = a' } in
+            case <# a# 10 of _ {
+              False -> [];
+              True  -> $wunfold (Right (I# (+# a# 1))) b (Just (I# a#))
+            }
+        };
+      Just c' ->
+        case b of _ {
+          Left b' ->
+            let { I# b# = b' } in
+            case <# b# 10 of _ {
+              False -> $wunfold a (Right (I# 1)) Nothing;
+              True ->
+                let { rest = $wunfold a (Left (I# (+# b# 1))) Nothing } in
+                let { hd   = (c', b') } in
+                hd : rest
+            };
+          Right b' ->
+            let { I# b# = b' } in
+            case <# b# 10 of _ {
+              False -> [];
+              True ->
+                let { rest = $wunfold a (Right (I# (+# b# 1))) Nothing } in
+                let { hd   = (c', b') } in
+                hd : rest
+            }
+        }
+    }
+
+
+
+

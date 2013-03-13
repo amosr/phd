@@ -1,0 +1,68 @@
+digraph EZipE {
+    rankdir=LR;
+    node [shape = doublecircle]; 
+    node [shape = rectangle];
+    1 [label = "wunf (L I#) (L I#) Nothing"];
+    2 [label = "\\w1 w2 w3\ncase w3 of"];
+    4 [label = "case w1 of"];
+    5 [label = "let I# i <- s\ncase i <# blah of"];
+    6 [label = "wunf (R I#) w2 Nothing"];
+
+    7 [label = "let s1 = Just s\nlet s2 <- i +# 1\nlet s3 = I# s2\nlet s4 = Left s3"];
+    8 [label = "wunf (L I#) w2 (J I#)"];
+
+    9 [label = "let I# i <- s\ncase i <# blah of"];
+    10[label = "[]"];
+    11[label = "let s1 = Just s\nlet s2 <- i +# 1\nlet s3 = I# s2\nlet s4 = Right s3"];
+    12[label="wunf (R I#) w2 (Just I#)"];
+
+    13[label="case w2 of"];
+    14[label="let I# i <- ls\ncase i <# blah of"];
+    15[label="wunf w1 (R I#) (J I#)"];
+
+    16[label="let s1 = i +# 1\nlet s2 = I# s1\nlet s3 = Left s2"];
+    17[label="let s4 = wunf w1 (L I#) Nothing"];
+    18[label="(s,ls) : s4"];
+
+    19[label="let I# i <- rs\ncase i <# blah of"];
+    20[label="[]"];
+    21[label="let s1 = i +# 1\nlet s2 = I# s1\nlet s3 = Left s2"];
+    22[label="let s4 = wunf w1 (R I#) Nothing"];
+    23[label="(s,ls) : s4"];
+
+    1 -> 2;
+    2 -> 4 [label = "Nothing"];
+    4 -> 5 [label = "Left s"];
+    5 -> 6 [label = "False"];
+    6 -> 2;
+
+    5 -> 7 [label = "True"];
+    7 -> 8;
+    8 -> 2;
+
+    4 -> 9 [label = "Right s"];
+    9 -> 10[label = "False"];
+    9 -> 11[label = "True"];
+    11 -> 12;
+    12 -> 2;
+
+    2 -> 13 [label = "Just s"];
+    13 -> 14[label="Left ls"];
+    14 -> 15 [label="False"];
+    15 -> 2;
+
+    14 -> 16[label="True"];
+    16 -> 17;
+    17 -> 2;
+    17 -> 18;
+
+    13 -> 19[label="Right rs"];
+    19 -> 20[label="False"];
+    19 -> 21[label="True"];
+    21->22;
+    22->2;
+    22->23;
+    
+    
+}
+

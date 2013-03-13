@@ -1,0 +1,386 @@
+[1 of 1] Compiling Blowup           ( Blowup.hs, Blowup.o )
+
+==================== Tidy Core rules ====================
+"SC:$wfoo0" [ALWAYS]
+    forall sc sc1 sc2 sc3 sc4 sc5 sc6.
+      $wfoo sc sc1 sc2 sc3 sc4 (sc5, sc6)
+      = foo_$s$wfoo1 sc sc1 sc2 sc3 sc4 sc5 sc6
+"SC:$wfoo1" [ALWAYS]
+    forall sc sc1 sc2 sc3 sc4 sc5 sc6.
+      $wfoo sc sc1 sc2 sc3 (sc4, sc5) sc6
+      = foo_$s$wfoo sc sc1 sc2 sc3 sc4 sc5 sc6
+"SC:$wfoo2" [ALWAYS]
+    forall sc sc1 sc2 sc3 sc4 sc5 sc6.
+      $wfoo sc sc1 sc2 (sc3, sc4) sc5 sc6
+      = bar_$s$wfoo sc sc1 sc2 sc3 sc4 sc5 sc6
+"SC:$wquux0" [ALWAYS]
+    forall sc sc1 sc2 sc3 sc4 sc5 sc6.
+      $wquux sc sc1 sc2 sc3 sc4 (sc5, sc6)
+      = quux_$s$wquux2 sc sc1 sc2 sc3 sc4 sc5 sc6
+"SC:$wquux1" [ALWAYS]
+    forall sc sc1 sc2 sc3 sc4 sc5 sc6.
+      $wquux sc sc1 sc2 sc3 (sc4, sc5) sc6
+      = quux_$s$wquux1 sc sc1 sc2 sc3 sc4 sc5 sc6
+"SC:$wquux2" [ALWAYS]
+    forall sc sc1 sc2 sc3 sc4 sc5 sc6.
+      $wquux sc sc1 sc2 (sc3, sc4) sc5 sc6
+      = quux_$s$wquux sc sc1 sc2 sc3 sc4 sc5 sc6
+
+
+
+==================== CorePrep ====================
+Result size of CorePrep = {terms: 792, types: 499, coercions: 0}
+
+Rec {
+quux_$s$wquux
+quux_$s$wquux =
+  \ sc_sE8 sc1_sEj sc2_sEk sc3_sEl sc4_sEm sc5_sEn sc6_sEe ->
+    case sc_sE8 of wild_sEa {
+      __DEFAULT ->
+        case ># wild_sEa 3000 of _ {
+          False ->
+            case ># wild_sEa 2000 of _ {
+              False ->
+                case ># wild_sEa 1000 of _ {
+                  False ->
+                    let { (s1_sEp, s2_sEo) ~ _ <- sc6_sEe } in
+                    let {
+                      sat_sJC
+                      sat_sJC = (s2_sEo, s1_sEp) } in
+                    let { __DEFAULT ~ sat_sJD <- -# wild_sEa 1 } in
+                    quux_$s$wquux
+                      sat_sJD sc1_sEj sc2_sEk sc3_sEl sc4_sEm sc5_sEn sat_sJC;
+                  True ->
+                    let { (r1_sEw, r2_sEv) ~ _ <- sc5_sEn } in
+                    let {
+                      sat_sJE
+                      sat_sJE = (r2_sEv, r1_sEw) } in
+                    let { __DEFAULT ~ sat_sJF <- -# wild_sEa 1 } in
+                    quux_$s$wquux
+                      sat_sJF sc1_sEj sc2_sEk sc3_sEl sc4_sEm sat_sJE sc6_sEe
+                };
+              True ->
+                let { __DEFAULT ~ sat_sJG <- -# wild_sEa 1 } in
+                quux_$s$wquux
+                  sat_sJG sc1_sEj sc2_sEk sc4_sEm sc3_sEl sc5_sEn sc6_sEe
+            };
+          True ->
+            let { __DEFAULT ~ sat_sJH <- -# wild_sEa 1 } in
+            quux_$s$wquux
+              sat_sJH sc2_sEk sc1_sEj sc3_sEl sc4_sEm sc5_sEn sc6_sEe
+        };
+      0 -> sc1_sEj
+    }
+end Rec }
+
+Rec {
+quux_$s$wquux1
+quux_$s$wquux1 =
+  \ sc_sEH sc1_sES sc2_sET sc3_sEU sc4_sEV sc5_sEW sc6_sEN ->
+    case sc_sEH of wild_sEJ {
+      __DEFAULT ->
+        case ># wild_sEJ 3000 of _ {
+          False ->
+            case ># wild_sEJ 2000 of _ {
+              False ->
+                case ># wild_sEJ 1000 of _ {
+                  False ->
+                    let { (s1_sEY, s2_sEX) ~ _ <- sc6_sEN } in
+                    let {
+                      sat_sJI
+                      sat_sJI = (s2_sEX, s1_sEY) } in
+                    let { __DEFAULT ~ sat_sJJ <- -# wild_sEJ 1 } in
+                    quux_$s$wquux1
+                      sat_sJJ sc1_sES sc2_sET sc3_sEU sc4_sEV sc5_sEW sat_sJI;
+                  True ->
+                    let { __DEFAULT ~ sat_sJK <- -# wild_sEJ 1 } in
+                    quux_$s$wquux1
+                      sat_sJK sc1_sES sc2_sET sc3_sEU sc5_sEW sc4_sEV sc6_sEN
+                };
+              True ->
+                let { (q1_sF6, q2_sF5) ~ _ <- sc3_sEU } in
+                let {
+                  sat_sJL
+                  sat_sJL = (sc4_sEV, sc5_sEW) } in
+                let { __DEFAULT ~ sat_sJM <- -# wild_sEJ 1 } in
+                quux_$s$wquux sat_sJM sc1_sES sc2_sET q2_sF5 q1_sF6 sat_sJL sc6_sEN
+            };
+          True ->
+            let { __DEFAULT ~ sat_sJN <- -# wild_sEJ 1 } in
+            quux_$s$wquux1
+              sat_sJN sc2_sET sc1_sES sc3_sEU sc4_sEV sc5_sEW sc6_sEN
+        };
+      0 -> sc1_sES
+    }
+end Rec }
+
+Rec {
+quux_$s$wquux2
+quux_$s$wquux2 =
+  \ sc_sFg sc1_sFn sc2_sFo sc3_sFp sc4_sFq sc5_sFs sc6_sFr ->
+    case sc_sFg of wild_sFi {
+      __DEFAULT ->
+        case ># wild_sFi 3000 of _ {
+          False ->
+            case ># wild_sFi 2000 of _ {
+              False ->
+                case ># wild_sFi 1000 of _ {
+                  False ->
+                    let { __DEFAULT ~ sat_sJO <- -# wild_sFi 1 } in
+                    quux_$s$wquux2
+                      sat_sJO sc1_sFn sc2_sFo sc3_sFp sc4_sFq sc6_sFr sc5_sFs;
+                  True ->
+                    let { (r1_sFy, r2_sFx) ~ _ <- sc4_sFq } in
+                    let {
+                      sat_sJP
+                      sat_sJP = (sc5_sFs, sc6_sFr) } in
+                    let { __DEFAULT ~ sat_sJQ <- -# wild_sFi 1 } in
+                    quux_$s$wquux1
+                      sat_sJQ sc1_sFn sc2_sFo sc3_sFp r2_sFx r1_sFy sat_sJP
+                };
+              True ->
+                let { (q1_sFF, q2_sFE) ~ _ <- sc3_sFp } in
+                let {
+                  sat_sJR
+                  sat_sJR = (sc5_sFs, sc6_sFr) } in
+                let { __DEFAULT ~ sat_sJS <- -# wild_sFi 1 } in
+                quux_$s$wquux sat_sJS sc1_sFn sc2_sFo q2_sFE q1_sFF sc4_sFq sat_sJR
+            };
+          True ->
+            let { __DEFAULT ~ sat_sJT <- -# wild_sFi 1 } in
+            quux_$s$wquux2
+              sat_sJT sc2_sFo sc1_sFn sc3_sFp sc4_sFq sc5_sFs sc6_sFr
+        };
+      0 -> sc1_sFn
+    }
+end Rec }
+
+Rec {
+$wquux
+$wquux =
+  \ ww_sFO ww1_sFZ ww2_sG0 w_sG1 w1_sG2 w2_sFU ->
+    case ww_sFO of wild_sFQ {
+      __DEFAULT ->
+        case ># wild_sFQ 3000 of _ {
+          False ->
+            case ># wild_sFQ 2000 of _ {
+              False ->
+                case ># wild_sFQ 1000 of _ {
+                  False ->
+                    let { (s1_sG4, s2_sG3) ~ _ <- w2_sFU } in
+                    let { __DEFAULT ~ sat_sJU <- -# wild_sFQ 1 } in
+                    quux_$s$wquux2 sat_sJU ww1_sFZ ww2_sG0 w_sG1 w1_sG2 s2_sG3 s1_sG4;
+                  True ->
+                    let { (r1_sGa, r2_sG9) ~ _ <- w1_sG2 } in
+                    let { __DEFAULT ~ sat_sJV <- -# wild_sFQ 1 } in
+                    quux_$s$wquux1 sat_sJV ww1_sFZ ww2_sG0 w_sG1 r2_sG9 r1_sGa w2_sFU
+                };
+              True ->
+                let { (q1_sGg, q2_sGf) ~ _ <- w_sG1 } in
+                let { __DEFAULT ~ sat_sJW <- -# wild_sFQ 1 } in
+                quux_$s$wquux sat_sJW ww1_sFZ ww2_sG0 q2_sGf q1_sGg w1_sG2 w2_sFU
+            };
+          True ->
+            let { __DEFAULT ~ sat_sJX <- -# wild_sFQ 1 } in
+            $wquux sat_sJX ww2_sG0 ww1_sFZ w_sG1 w1_sG2 w2_sFU
+        };
+      0 -> ww1_sFZ
+    }
+end Rec }
+
+quux
+quux =
+  \ w_sGn w1_sGq w2_sGx w3_sGy w4_sGz ->
+    let { I# ww1_sGu ~ _ <- w_sGn } in
+    let { (ww3_sGv, ww4_sGw) ~ _ <- w1_sGq } in
+    $wquux ww1_sGu ww3_sGv ww4_sGw w2_sGx w3_sGy w4_sGz
+
+Rec {
+bar_$s$wfoo
+bar_$s$wfoo =
+  \ sc_sGH sc1_sGS sc2_sGT sc3_sGU sc4_sGV sc5_sGW sc6_sGN ->
+    case sc_sGH of wild_sGJ {
+      __DEFAULT ->
+        case ># wild_sGJ 3000 of _ {
+          False ->
+            case ># wild_sGJ 2000 of _ {
+              False ->
+                case ># wild_sGJ 1000 of _ {
+                  False ->
+                    let { (s1_sGY, s2_sGX) ~ _ <- sc6_sGN } in
+                    let {
+                      sat_sJY
+                      sat_sJY = (s2_sGX, s1_sGY) } in
+                    let { __DEFAULT ~ sat_sJZ <- -# wild_sGJ 1 } in
+                    bar_$s$wfoo
+                      sat_sJZ sc1_sGS sc2_sGT sc3_sGU sc4_sGV sc5_sGW sat_sJY;
+                  True ->
+                    let { (r1_sH5, r2_sH4) ~ _ <- sc5_sGW } in
+                    let {
+                      sat_sK0
+                      sat_sK0 = (r2_sH4, r1_sH5) } in
+                    let { __DEFAULT ~ sat_sK1 <- -# wild_sGJ 1 } in
+                    bar_$s$wfoo sat_sK1 sc1_sGS sc2_sGT sc3_sGU sc4_sGV sat_sK0 sc6_sGN
+                };
+              True ->
+                let { __DEFAULT ~ sat_sK2 <- -# wild_sGJ 1 } in
+                bar_$s$wfoo sat_sK2 sc1_sGS sc2_sGT sc4_sGV sc3_sGU sc5_sGW sc6_sGN
+            };
+          True ->
+            let { __DEFAULT ~ sat_sK3 <- -# wild_sGJ 1 } in
+            bar_$s$wfoo sat_sK3 sc2_sGT sc1_sGS sc3_sGU sc4_sGV sc5_sGW sc6_sGN
+        };
+      0 ->
+        let { I# ww1_sHb ~ ww_sHc <- sc1_sGS } in
+        quux_$s$wquux
+          ww1_sHb ww_sHc sc2_sGT sc3_sGU sc4_sGV sc5_sGW sc6_sGN
+    }
+end Rec }
+
+Rec {
+foo_$s$wfoo
+foo_$s$wfoo =
+  \ sc_sHk sc1_sHv sc2_sHw sc3_sHx sc4_sHy sc5_sHz sc6_sHq ->
+    case sc_sHk of wild_sHm {
+      __DEFAULT ->
+        case ># wild_sHm 3000 of _ {
+          False ->
+            case ># wild_sHm 2000 of _ {
+              False ->
+                case ># wild_sHm 1000 of _ {
+                  False ->
+                    let { (s1_sHB, s2_sHA) ~ _ <- sc6_sHq } in
+                    let {
+                      sat_sK4
+                      sat_sK4 = (s2_sHA, s1_sHB) } in
+                    let { __DEFAULT ~ sat_sK5 <- -# wild_sHm 1 } in
+                    foo_$s$wfoo
+                      sat_sK5 sc1_sHv sc2_sHw sc3_sHx sc4_sHy sc5_sHz sat_sK4;
+                  True ->
+                    let { __DEFAULT ~ sat_sK6 <- -# wild_sHm 1 } in
+                    foo_$s$wfoo sat_sK6 sc1_sHv sc2_sHw sc3_sHx sc5_sHz sc4_sHy sc6_sHq
+                };
+              True ->
+                let { (q1_sHJ, q2_sHI) ~ _ <- sc3_sHx } in
+                let {
+                  sat_sK7
+                  sat_sK7 = (sc4_sHy, sc5_sHz) } in
+                let { __DEFAULT ~ sat_sK8 <- -# wild_sHm 1 } in
+                bar_$s$wfoo sat_sK8 sc1_sHv sc2_sHw q2_sHI q1_sHJ sat_sK7 sc6_sHq
+            };
+          True ->
+            let { __DEFAULT ~ sat_sK9 <- -# wild_sHm 1 } in
+            foo_$s$wfoo sat_sK9 sc2_sHw sc1_sHv sc3_sHx sc4_sHy sc5_sHz sc6_sHq
+        };
+      0 ->
+        let { I# ww1_sHO ~ ww_sHP <- sc1_sHv } in
+        quux_$s$wquux1
+          ww1_sHO ww_sHP sc2_sHw sc3_sHx sc4_sHy sc5_sHz sc6_sHq
+    }
+end Rec }
+
+Rec {
+foo_$s$wfoo1
+foo_$s$wfoo1 =
+  \ sc_sHX sc1_sI4 sc2_sI5 sc3_sI6 sc4_sI7 sc5_sI9 sc6_sI8 ->
+    case sc_sHX of wild_sHZ {
+      __DEFAULT ->
+        case ># wild_sHZ 3000 of _ {
+          False ->
+            case ># wild_sHZ 2000 of _ {
+              False ->
+                case ># wild_sHZ 1000 of _ {
+                  False ->
+                    let { __DEFAULT ~ sat_sKa <- -# wild_sHZ 1 } in
+                    foo_$s$wfoo1
+                      sat_sKa sc1_sI4 sc2_sI5 sc3_sI6 sc4_sI7 sc6_sI8 sc5_sI9;
+                  True ->
+                    let { (r1_sIf, r2_sIe) ~ _ <- sc4_sI7 } in
+                    let {
+                      sat_sKb
+                      sat_sKb = (sc5_sI9, sc6_sI8) } in
+                    let { __DEFAULT ~ sat_sKc <- -# wild_sHZ 1 } in
+                    foo_$s$wfoo sat_sKc sc1_sI4 sc2_sI5 sc3_sI6 r2_sIe r1_sIf sat_sKb
+                };
+              True ->
+                let { (q1_sIm, q2_sIl) ~ _ <- sc3_sI6 } in
+                let {
+                  sat_sKd
+                  sat_sKd = (sc5_sI9, sc6_sI8) } in
+                let { __DEFAULT ~ sat_sKe <- -# wild_sHZ 1 } in
+                bar_$s$wfoo sat_sKe sc1_sI4 sc2_sI5 q2_sIl q1_sIm sc4_sI7 sat_sKd
+            };
+          True ->
+            let { __DEFAULT ~ sat_sKf <- -# wild_sHZ 1 } in
+            foo_$s$wfoo1
+              sat_sKf sc2_sI5 sc1_sI4 sc3_sI6 sc4_sI7 sc5_sI9 sc6_sI8
+        };
+      0 ->
+        let { I# ww1_sIr ~ ww_sIs <- sc1_sI4 } in
+        quux_$s$wquux2
+          ww1_sIr ww_sIs sc2_sI5 sc3_sI6 sc4_sI7 sc5_sI9 sc6_sI8
+    }
+end Rec }
+
+Rec {
+$wfoo
+$wfoo =
+  \ ww_sIz ww1_sIK ww2_sIL w_sIM w1_sIN w2_sIF ->
+    case ww_sIz of wild_sIB {
+      __DEFAULT ->
+        case ># wild_sIB 3000 of _ {
+          False ->
+            case ># wild_sIB 2000 of _ {
+              False ->
+                case ># wild_sIB 1000 of _ {
+                  False ->
+                    let { (s1_sIP, s2_sIO) ~ _ <- w2_sIF } in
+                    let { __DEFAULT ~ sat_sKg <- -# wild_sIB 1 } in
+                    foo_$s$wfoo1 sat_sKg ww1_sIK ww2_sIL w_sIM w1_sIN s2_sIO s1_sIP;
+                  True ->
+                    let { (r1_sIV, r2_sIU) ~ _ <- w1_sIN } in
+                    let { __DEFAULT ~ sat_sKh <- -# wild_sIB 1 } in
+                    foo_$s$wfoo sat_sKh ww1_sIK ww2_sIL w_sIM r2_sIU r1_sIV w2_sIF
+                };
+              True ->
+                let { (q1_sJ1, q2_sJ0) ~ _ <- w_sIM } in
+                let { __DEFAULT ~ sat_sKi <- -# wild_sIB 1 } in
+                bar_$s$wfoo sat_sKi ww1_sIK ww2_sIL q2_sJ0 q1_sJ1 w1_sIN w2_sIF
+            };
+          True ->
+            let { __DEFAULT ~ sat_sKj <- -# wild_sIB 1 } in
+            $wfoo sat_sKj ww2_sIL ww1_sIK w_sIM w1_sIN w2_sIF
+        };
+      0 ->
+        let { I# ww4_sJ5 ~ ww3_sJ6 <- ww1_sIK } in
+        $wquux ww4_sJ5 ww3_sJ6 ww2_sIL w_sIM w1_sIN w2_sIF
+    }
+end Rec }
+
+foo
+foo =
+  \ w_sJc w1_sJf w2_sJm w3_sJn w4_sJo ->
+    let { I# ww1_sJj ~ _ <- w_sJc } in
+    let { (ww3_sJk, ww4_sJl) ~ _ <- w1_sJf } in
+    $wfoo ww1_sJj ww3_sJk ww4_sJl w2_sJm w3_sJn w4_sJo
+
+$wbar
+$wbar =
+  \ ww_sJr ->
+    let {
+      n_sJs
+      n_sJs = I# ww_sJr } in
+    let {
+      sat_sKk
+      sat_sKk = (n_sJs, n_sJs) } in
+    let {
+      sat_sKl
+      sat_sKl = (n_sJs, n_sJs) } in
+    bar_$s$wfoo ww_sJr n_sJs n_sJs n_sJs n_sJs sat_sKl sat_sKk
+
+bar
+bar =
+  \ _ w1_sJx -> let { I# ww1_sJA ~ _ <- w1_sJx } in $wbar ww1_sJA
+
+
+

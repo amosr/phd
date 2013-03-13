@@ -1,0 +1,29 @@
+main_foo_$s$wunfold
+main_foo_$s$wunfold =
+  \ sc_sIx sc1_sIC ->
+    let { I# x_sIA ~ wild_sIE <- sc_sIx } in
+    case <# x_sIA 10 of _ {
+      False -> [];
+      True ->
+        case <# sc1_sIC 11 of _ {
+          False -> [];
+          True ->
+            let {
+              sat_sJC
+              sat_sJC =
+                let { __DEFAULT ~ sat_sIM <- +# sc1_sIC 1 } in
+                let { __DEFAULT ~ sat_sIJ <- +# x_sIA 1 } in
+                let {
+                  sat_sIN
+                  sat_sIN = I# sat_sIJ } in
+                main_foo_$s$wunfold sat_sIN sat_sIM } in
+            let {
+              sat_sIG
+              sat_sIG = I# sc1_sIC } in
+            let {
+              sat_sJD
+              sat_sJD = (wild_sIE, sat_sIG) } in
+            : sat_sJD sat_sJC
+        }
+    }
+

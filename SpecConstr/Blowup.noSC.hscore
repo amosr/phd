@@ -1,0 +1,128 @@
+[1 of 1] Compiling Blowup           ( Blowup.hs, Blowup.o )
+
+==================== CorePrep ====================
+Result size of CorePrep = {terms: 261, types: 222, coercions: 0}
+
+Rec {
+$wquux
+$wquux =
+  \ ww_suT ww1_sv4 ww2_sv5 w_sv6 w1_sv7 w2_suZ ->
+    case ww_suT of wild_suV {
+      __DEFAULT ->
+        case ># wild_suV 3000 of _ {
+          False ->
+            case ># wild_suV 2000 of _ {
+              False ->
+                case ># wild_suV 1000 of _ {
+                  False ->
+                    let { (s1_sv9, s2_sv8) ~ _ <- w2_suZ } in
+                    let {
+                      sat_swV
+                      sat_swV = (s2_sv8, s1_sv9) } in
+                    let { __DEFAULT ~ sat_swW <- -# wild_suV 1 } in
+                    $wquux sat_swW ww1_sv4 ww2_sv5 w_sv6 w1_sv7 sat_swV;
+                  True ->
+                    let { (r1_svg, r2_svf) ~ _ <- w1_sv7 } in
+                    let {
+                      sat_swX
+                      sat_swX = (r2_svf, r1_svg) } in
+                    let { __DEFAULT ~ sat_swY <- -# wild_suV 1 } in
+                    $wquux sat_swY ww1_sv4 ww2_sv5 w_sv6 sat_swX w2_suZ
+                };
+              True ->
+                let { (q1_svn, q2_svm) ~ _ <- w_sv6 } in
+                let {
+                  sat_swZ
+                  sat_swZ = (q2_svm, q1_svn) } in
+                let { __DEFAULT ~ sat_sx0 <- -# wild_suV 1 } in
+                $wquux sat_sx0 ww1_sv4 ww2_sv5 sat_swZ w1_sv7 w2_suZ
+            };
+          True ->
+            let { __DEFAULT ~ sat_sx1 <- -# wild_suV 1 } in
+            $wquux sat_sx1 ww2_sv5 ww1_sv4 w_sv6 w1_sv7 w2_suZ
+        };
+      0 -> ww1_sv4
+    }
+end Rec }
+
+quux
+quux =
+  \ w_svv w1_svy w2_svF w3_svG w4_svH ->
+    let { I# ww1_svC ~ _ <- w_svv } in
+    let { (ww3_svD, ww4_svE) ~ _ <- w1_svy } in
+    $wquux ww1_svC ww3_svD ww4_svE w2_svF w3_svG w4_svH
+
+Rec {
+$wfoo
+$wfoo =
+  \ ww_svO ww1_svZ ww2_sw0 w_sw1 w1_sw2 w2_svU ->
+    case ww_svO of wild_svQ {
+      __DEFAULT ->
+        case ># wild_svQ 3000 of _ {
+          False ->
+            case ># wild_svQ 2000 of _ {
+              False ->
+                case ># wild_svQ 1000 of _ {
+                  False ->
+                    let { (s1_sw4, s2_sw3) ~ _ <- w2_svU } in
+                    let {
+                      sat_sx2
+                      sat_sx2 = (s2_sw3, s1_sw4) } in
+                    let { __DEFAULT ~ sat_sx3 <- -# wild_svQ 1 } in
+                    $wfoo sat_sx3 ww1_svZ ww2_sw0 w_sw1 w1_sw2 sat_sx2;
+                  True ->
+                    let { (r1_swb, r2_swa) ~ _ <- w1_sw2 } in
+                    let {
+                      sat_sx4
+                      sat_sx4 = (r2_swa, r1_swb) } in
+                    let { __DEFAULT ~ sat_sx5 <- -# wild_svQ 1 } in
+                    $wfoo sat_sx5 ww1_svZ ww2_sw0 w_sw1 sat_sx4 w2_svU
+                };
+              True ->
+                let { (q1_swi, q2_swh) ~ _ <- w_sw1 } in
+                let {
+                  sat_sx6
+                  sat_sx6 = (q2_swh, q1_swi) } in
+                let { __DEFAULT ~ sat_sx7 <- -# wild_svQ 1 } in
+                $wfoo sat_sx7 ww1_svZ ww2_sw0 sat_sx6 w1_sw2 w2_svU
+            };
+          True ->
+            let { __DEFAULT ~ sat_sx8 <- -# wild_svQ 1 } in
+            $wfoo sat_sx8 ww2_sw0 ww1_svZ w_sw1 w1_sw2 w2_svU
+        };
+      0 ->
+        let { I# ww4_swn ~ ww3_swo <- ww1_svZ } in
+        $wquux ww4_swn ww3_swo ww2_sw0 w_sw1 w1_sw2 w2_svU
+    }
+end Rec }
+
+foo
+foo =
+  \ w_swu w1_swx w2_swE w3_swF w4_swG ->
+    let { I# ww1_swB ~ _ <- w_swu } in
+    let { (ww3_swC, ww4_swD) ~ _ <- w1_swx } in
+    $wfoo ww1_swB ww3_swC ww4_swD w2_swE w3_swF w4_swG
+
+$wbar
+$wbar =
+  \ ww_swJ ->
+    let {
+      n_swK
+      n_swK = I# ww_swJ } in
+    let {
+      sat_sx9
+      sat_sx9 = (n_swK, n_swK) } in
+    let {
+      sat_sxa
+      sat_sxa = (n_swK, n_swK) } in
+    let {
+      sat_sxb
+      sat_sxb = (n_swK, n_swK) } in
+    $wfoo ww_swJ n_swK n_swK sat_sxb sat_sxa sat_sx9
+
+bar
+bar =
+  \ _ w1_swQ -> let { I# ww1_swT ~ _ <- w1_swQ } in $wbar ww1_swT
+
+
+
