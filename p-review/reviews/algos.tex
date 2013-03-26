@@ -1,0 +1,13 @@
+
+\rev{A hierarchical $O(N \log N)$ force-calculation algorithm}{barnes1986hierarchical}
+
+Distribute N-body problem into a heirarchical octree, allowing $n \log n$ instead of $n^2$ interactions.
+Existing hierarchical N-body simulations exist (Appel, Jernigan, Porter) but the loss in accuracy is hard to analyse. Is this because the tree structure is not necessarily a space partitioning?
+A better idea of where the accuracy errors are is possible because the octree is an up-to-date space partitioning.
+
+\rev{A modified tree code: don't laugh; it runs}{barnes1990modified}
+A modification of Barnes-Hut that is better for vector machines. By sharing some of the 'interaction list' between nearby particles.
+Meh.
+
+
+

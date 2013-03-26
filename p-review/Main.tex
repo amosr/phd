@@ -1,0 +1,50 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage{attrib}
+\usepackage{cite}
+\usepackage{setspace}
+\usepackage{style/code}
+\usepackage{style/utils}
+\usepackage{url}
+% \usepackage{times}
+\newcommand{\at}{\texttt{@}}
+\makeatactive
+
+\include{template/template}
+\renewcommand{\author}{Amos Robinson}
+\renewcommand{\title}{Loop optimisation for a pure world}
+
+\newcommand{\interact}[1]{\textcolor[rgb]{0.2,0.2,0.6}{#1}}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+% actual content must be 1.5line-spacing. make ToC 1.5 too, because normal looks silly if spanning *just* two pages
+\onehalfspacing
+\tableofcontents
+
+\include{section/00-Thanks}
+
+
+\include{section/01-Introduction}
+\include{reviews/algos}
+\include{reviews/loops}
+\include{reviews/ndp}
+\include{reviews/parteval}
+\include{reviews/series}
+\include{reviews/shapes}
+\include{reviews/streams}
+\include{reviews/types}
+
+
+% think the bib can be normal line-spacing
+%\singlespacing
+
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{apalike}
+\bibliography{../bibs/Main,../bibs/loops,../bibs/ndp,../bibs/parteval,../bibs/series,../bibs/streams,../bibs/types}
+
+\end{document}

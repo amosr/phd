@@ -1,0 +1,37 @@
+\rev{Collective loop fusion for array contraction}{gao1993collective}
+Array contraction transforms array variables into scalar variables,
+potentially allowing them to be stored in registers.
+Loops are fused in order to maximise array contraction opportunities.
+
+Reads and writes to arrays are far more costly than scalar variables, since
+scalars can be stored in registers but arrays must go through the memory system.
+Even if the requested memory is in cache, a cache hit is still far more expensive than a register read.
+
+A \emph{loop dependence graph} (LDG) is created for a single-entry, single-exit region with $k$ ``identically control dependent'' perfect loop nests with equivalent index spaces.
+A loop nest is a set of nested loops; a perfect loop nest only has statements inside the innermost loop.
+There is a node in the LDG for each loop nest.
+The edges are loop-independent data dependencies, which are classified as \emph{fusible} or \emph{nonfusible}.
+Fusing \emph{nonfusible} edges would violate data dependence. \emph{Fusible} edges can be \emph{contractable} or \emph{noncontractable}.
+Fusing a \emph{contractable} edge will save memory access if data is already available in registers.
+This can be generalised to allow distinct index spaces by marking any dependencies between difference spaces nonfusible. A single statement is a degenerate case (loop with unit index space).
+
+First, the nodes are partitioned into fusible clusters. Then some kind of maxflow/mincut algorithm is applied...
+
+
+\rev{Better tiling and array contraction for compiling scientific programs}{pike2002better}
+
+
+\rev{Locality Optimizations for Multi-Level Caches}{rivera1999locality}
+
+\rev{Optimization of Array Accesses by Collective Loop Transformations}{sarkar1991optimization}
+
+\rev{Improving Data Locality by Array Contraction}{song2004improving}
+
+\rev{Loop scheduling with memory access reduction subject to register constraints for DSP applications}{wang2013loop}
+Quite low-level, working on assembly language.
+Reduce memory accesses in cases where a specific array element is used in successive iterations.
+  for (int i =...)
+    k[i] = k[i] * k[i+1];
+The memory access for k[i+1] should be stored in a register and kept for the next iteration's k[i].
+Build a DAG out of loop body (with no loop ??), then create a memory access graph (MAG) to describe the memory dependence of operations over successive iterations.
+After the MAG is created, a register usage scheduling is created and used to decide which registers to use.

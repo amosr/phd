@@ -1,0 +1,70 @@
+\rev{Enlarging the Scope of Vector-Based Computations: Extending Fortran 90 by Nested Data Parallelism}{au1997enlarging}
+Vector computers are good for flat data parallelism, which requires regular data, and so languages like Fortran only support rectangular array parallelism. Nested data parallelism can be converted to flat data parallelism with a /flattening/ transform. An extension to Fortran 90 is shown that flattens nested data parallelism, allowing existing optimising Fortran compilers to use the vector machinery.
+ETC.
+
+\rev{Scans as Primitive Parallel Operations}{blelloch1989scans}
+If distributed vector machines implemented scan operations on vectors, much time could be saved that would otherwise be spent waiting for memory accesses to return.
+Explanation of radix sort example.
+Segmented scan operations use a vector of flags the same length as the values. I guess this totally disallows empty segments, which makes sense. True flag indicates the start of a segment. What happens if there is no True flag at the start..?
+Clever implementation of Quicksort using segmented scans and iteratively splitting each segment into more subsegments. Using the segment flag representation allows very easy splitting.
+It seems quite disingenuous to claim ``constant time for a vector of size n, provided there are n nodes in the machine''. It does deal with this eventually though, in the load-balancing section.
+Hardware description of a tree scan.
+
+\rev{Vector Models for Data-Parallel Computing}{blelloch1990vector}
+Book covering scan primitives and basic vectorisation/flattening.
+Must reread this to understand the flattening they use.
+
+\rev{A Comparison of Sorting Algorithms for the Connection Machine CM-2}{blelloch1991comparison}
+Different sorting algorithms are implemented and compared for the connection machine. Irrelevant.
+
+\rev{Implementation of a Portable Nested Data-Parallel Language}{blelloch1993implementation}
+Goes through the implementation of NESL, but only the VCODE (virtual machine) and CVL (parallel primitives library).
+Doesn't actually talk about flattening or vectorisation.
+Irrelevant.
+
+\rev{Nesl: A Nested Data-Parallel Language}{blelloch1995nesl}
+This is more like a user guide / tutorial for programming in NESL, rather than any information about how it is implemented.
+
+\rev{Programming Parallel Algorithms}{blelloch1996programming}
+More example programs in NESL...
+
+
+\rev{How Portable is Nested Data Parallelism?}{chakravarty1999portable}
+NDP that works for vector/scalar, shared/distributed memory systems.
+
+\rev{More Types for Nested Data Parallel Programming}{chakravarty2000more}
+Blelloch & Sabot's original flattening transformation didn't support general sum types, recursive types, or higher-order functions. Recursive types have been shown in \cite{keller1998flattening}.
+This generalises flattening to support the full range of types in Haskell.
+By formalising the flattening transformation in a lambda calculus they are able to easier express separate compilation.
+
+\rev{Functional Array Fusion}{chakravarty2001functional}
+Fusion on unboxed arrays. Two combinators are used: loopP and replicateP.
+loopP is a complicated loop that is a combination of filter, map, segmented fold, etc.
+@replicateP n e@ simply creates an array of length @n@ full of elements @e@.
+Rewrite rules are used to fuse adjacent loops and replicates; a loop over a replicate is
+fused into a simple replicate of unit, since that is very cheap.
+
+\rev{Nepal - Nested Data-Parallelism in Haskell}{chakravarty2001nepal}
+\rev{}{chakravarty2003approach}
+\rev{}{chakravarty2007data}
+\rev{}{chakravarty2008partial}
+
+\rev{}{jones2008harnessing}
+
+
+\rev{}{keller1998flattening}
+Problem: NESL etc flattening transform only supports homogenous vectors, so trees are awkward to program.
+The flattening transform is extended to allow user-defined recursive types.
+
+\rev{}{keller1999distributed}
+Separating local from global computations, so that fusion can be applied to only local computations.
+--REREAD
+
+
+\rev{}{keller2012vectorisation}
+
+\rev{}{lechtchinsky2002costing}
+\rev{}{leshchinskiy2006higher}
+
+\rev{}{lippmeier2012work}
+

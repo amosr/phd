@@ -1,0 +1,136 @@
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{fullpage}
+\usepackage{float}
+\usepackage{alltt}
+\usepackage{color}
+
+\floatstyle{plain}
+\newfloat{codefig}{H}
+
+\newcommand{\codefigend}{\vspace{-45pt}}
+
+\numberwithin{section}{chapter}
+\theoremstyle{plain}    
+\newtheorem{thm}{Theorem}[chapter]
+\numberwithin{figure}{chapter} %% Comment out for sequentially-numbered
+\numberwithin{table}{chapter}  %% Comment out for sequentially-numbered
+
+%-----------------------------------------------------------------------
+%  Reduce widow/orphan problems, mainly from a posting from Donald
+%  Arsenau on comp.text.tex, 24 Sep 1995.
+%  Updated to follow comments from Michael Downes on comp.text.tex,
+%  31 Aug 1998.
+%-----------------------------------------------------------------------
+\doublehyphendemerits=10000     % No consecutive line hyphens.
+\brokenpenalty=4991             % Reduce broken words across columns/pages.
+\widowpenalty=9999              % Almost no widows at bottom of page.
+\clubpenalty=9996               % Almost no orphans at top of page.
+\interfootnotelinepenalty=9999  % Almost never break footnotes.
+\predisplaypenalty=10000        % Default value
+\postdisplaypenalty=1549        % Few breaks between display and widows
+\displaywidowpenalty=1602       % At least as high as \postdisplaypenalty
+
+%-----------------------------------------------------------------------
+% Change float placement parameters to reduce problems.  Based on
+% values posted by Donald Arsenau on comp.text.tex at various times.
+% See in particular 17th Nov 1997.
+%-----------------------------------------------------------------------
+\renewcommand{\topfraction}{.85}
+\renewcommand{\bottomfraction}{.7}
+\renewcommand{\textfraction}{.15}
+\renewcommand{\floatpagefraction}{.66}
+\renewcommand{\dbltopfraction}{.66}
+\renewcommand{\dblfloatpagefraction}{.66}
+\setcounter{topnumber}{9}
+\setcounter{bottomnumber}{9}
+\setcounter{totalnumber}{20}
+\setcounter{dbltopnumber}{9}
+
+%-----------------------------------------------------------------------
+% Re-define \cleardoublepage as recommended by Piet van Oostrum in the
+% documentation for fancyhdr.sty page 15.  This is to avoid blank pages
+% having headers or footers.
+%-----------------------------------------------------------------------
+\renewcommand{\cleardoublepage}{\clearpage\if@twoside \ifodd\c@page\else
+   \thispagestyle{empty}
+   \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+
+%-----------------------------------------------------------------------
+% Number figures, tables and equations by chapter.  Re-define footnotes
+% and minipage footnotes to be single spaced.  Make new macros needed
+% for thesis definitions.
+%-----------------------------------------------------------------------
+\renewcommand{\thefigure}{\thechapter.\arabic\c@figure}
+\renewcommand{\thetable}{\thechapter.\arabic\c@table}
+\renewcommand{\theequation}{\thechapter.\arabic\c@equation}
+
+% Re-define \@footnotetext and \@mpfootnotetext to use single spacing
+% rather than the space-and-a-half that is the default elsewhere.
+
+\renewcommand{\bibname}{References}
+
+\renewcommand{\title}[1]{\gdef\title{#1}}
+\renewcommand{\author}[1]{\gdef\author{#1}}
+\newcommand{\school}[1]{\gdef\school{#1}}
+\newcommand{\degreetype}[1]{\gdef\degreetype{#1}}
+\newcommand{\submitdate}[1]{\gdef\submitdate{#1}}
+
+\renewcommand{\title}{}
+\renewcommand{\author}{}
+\renewcommand{\school}{Computer Science and Engineering}
+\renewcommand{\degreetype}{Bachelor of Computer Science (Hons)}
+\newcommand{\university}{The University of New South Wales}
+\renewcommand{\submitdate}{\ifcase\the\month\or
+  January\or February\or March\or April\or May\or June\or
+  July\or August\or September\or October\or November\or December\fi
+  \space \number\the\year}
+\newcommand{\copyrightyear}{\number\the\year}
+
+%-----------------------------------------------------------------------
+% Title page definition.
+%-----------------------------------------------------------------------
+\newcommand{\titlep}{%
+        \thispagestyle{empty}%
+        \begin{titlepage}
+        \null\vskip2.5cm%
+        \begin{center}
+                {\rmfamily\Large\expandafter{\title}}
+        \end{center}
+        \vskip1cm
+        \begin{center}
+                {\rmfamily\normalsize By \\ \expandafter{\author}}
+        \end{center}
+        \vfill
+        \begin{center}
+                \textsc{A thesis submitted for the degree of \\
+                \expandafter{\degreetype}}
+        \end{center}
+        \vfill
+        \vskip1cm
+\begin{center}
+\includegraphics[width=4cm]{template/unswcrest.pdf}
+\end{center}
+        \vskip1cm
+        \begin{center}
+                {\rmfamily\normalsize \expandafter{\school},\\
+                \expandafter{\university}.}
+                \vskip1cm
+                {\rmfamily\normalsize \submitdate}\\
+        \end{center}
+        \vskip1cm
+        \end{titlepage}
+        \newpage}
+
+%-----------------------------------------------------------------------
+% Redefine \maketitle so as to make a UNSW suitable title
+%-----------------------------------------------------------------------
+\renewcommand{\maketitle}{%
+        \thispagestyle{empty}%
+        \newpage%
+        \titlep
+        \raggedbottom
+    }
+

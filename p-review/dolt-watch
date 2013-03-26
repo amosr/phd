@@ -1,0 +1,4 @@
+#!/bin/bash
+while inotifywait -e modify -r . --exclude ".*.swp"; do
+    LATEX_OPTS="-interaction batchmode" ./dolt
+done

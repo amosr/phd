@@ -1,0 +1,57 @@
+
+\rev{Limix: a partial evaluator for partially static structures}{bechet1994limix}
+Splits function specialisation from dead-variable elimination.
+This solves a problem with nested structures that ``standard specialisers'' apparently do not treat.
+May be some relation to the `reallocation problem' we have in GHC, but I'm not certain about that.
+
+\rev{}{bolingbroke2011supercomp}
+\rev{}{bolingbroke2011termination}
+
+
+\rev{A transformation system for developing recursive programs}{burstall1977transformation}
+Very interesting system of unfolding and then folding recursive definitions.
+With some cleverness they are able to rewrite several recursive calls into a single recursion.
+Seems reminiscent of tupling.
+However, it seems to require user intervention and relies on domain knowledge such as commutativity of addition.
+
+\rev{Worker-wrapper}{gill2009worker}
+\rev{}{mogensen1993constructor}
+
+\rev{}{peyton2007call}
+SpecConstr is an optimisation that specialises recursive functions to remove unnecessary allocation and pattern-matching of constructors.
+When a recursive function pattern matches or destructs one of its arguments and makes a recursive call with a constructor of that argument,
+the recursive call can be specialised for that particular argument so no allocation or unboxing is necessary.
+This is done in three stages;
+\begin{enumerate}
+\item
+Identify the call patterns: recursive function call, with at least one argument being a constructor application that is pattern-matched elsewhere in the body.
+\item
+Specialise: the function is copied and simplified for the case of that particular constructor argument
+\item
+Propagate: the existing rewrite rule system is used to find any calls to the functions with known constructors as arguments, and rewritten to call the specialised version.
+\end{enumerate}
+Additional refinements are used to decide which functions to specialise. This is a trade-off between runtime efficiency and code explosion:
+\begin{enumerate}
+\item
+ take into account variables that have been let-bound or pattern matches, when used as arguments
+\item
+ record nested pattern matches
+\item
+ when specialising a function, collect new patterns from the specialised right-hand side
+\item
+ mutual recursion
+\end{enumerate}
+There is a potential problem with reboxing: when an argument may be specialised but is used as an argument to another function, specialisation may perform more allocation.
+
+
+
+
+\rev{Avoiding repeated tests in pattern matching}{thiemann1993avoiding}
+Very similar to SpecConstr, except for a strict functional language.
+Really there's no difference that it's strict.
+Explains semantics of a small first-order subset of ML and then shows implementation of specialisation.
+First an environment is built up of call patterns of recursive calls, then those cases are specialised.
+
+\rev{}{thiemann1994higher}
+\rev{}{thiemann1995generation}
+
