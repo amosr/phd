@@ -19,11 +19,42 @@ First, the nodes are partitioned into fusible clusters. Then some kind of maxflo
 
 
 \rev{Better tiling and array contraction for compiling scientific programs}{pike2002better}
+Titanium, a dialect of Java with \tt{foreach} loops that execute in unspecified order over some subset of $\mathbb{Z}^N$.
+Instead of static analysis of loop bounds, array bounds and array aliasing, cheap runtime tests are used
+and both optimised and unoptimised versions are generated.
+Instead of modelling register reuse or cache behaviour, the compiler measures program runtime with different settings and chooses the best.
+Tile space $T$ is defined at $\mathbb{Z}^N \times {0, ... , K - 1}$ where the tile size is $K$.
 
+The array contraction here is more to do with replacing arrays with smaller temporary buffer arrays, than scalar variables.
+The tiling is chosen so that the buffers can be small.
 
 \rev{Locality Optimizations for Multi-Level Caches}{rivera1999locality}
+It turns out that most cache-aware optimisations can benefit from multi-level caches just by targeting L1.
 
 \rev{Optimization of Array Accesses by Collective Loop Transformations}{sarkar1991optimization}
+Array contraction is presented: replacing an array variable with a scalar variable or a buffer with a few scalar variables.
+Loops are analysed; when a loop produces an array in the same order as it is consumed in another loop, there is an opportunity to
+remove the intermediate array.
+
+Access vectors of arrays are determined by the array subscripts inside the loop.
+A \emph{loop communication graph} is created from a set of loop nests. A node is created for each loop nest, with input ports and output ports for each input and output array of the loop. Each port is annotated with the array's access vector.
+Edges represent array communication between an output port of the source loop nest and the input port of the destination loop nest.
+An edge is \emph{consistent} if both ports have the same array access vector, meaning they access the array in the same way.
+
+The goal, then, is to minimise the number of inconsistent ports to allow more opportunities for array contraction.
+\begin{itemize}
+\item
+\emph{Loop reversal} flips an array's access vector and all the subscripts inside the loop, by reversing the index space.
+\end{itemize}
+For one dimension, the problem of choosing which loops to reverse is mapped to a 2-colouring problem.
+A new graph is created with a positive and negative for each node in the LCG. For each edge, the positive of the input is connected to the negative output if the edge is consistent, otherwise the positive output.
+This means that two nodes connected by an inconsistent edge cannot have the same colour in their positive node.
+
+The graph is then coloured and for each positive node, if it is colour one it is left alone, if it is colour two it is reversed.
+If the graph cannot be coloured an edge is removed and colouring is again attempted.
+Weightings are added to the edges to prioritise removal of edges and to never remove the edges between positive and negative of one node.
+
+For multi-dimensional loops, a loop nest may be interchanged, thus swapping the array access vector.
 
 \rev{Improving Data Locality by Array Contraction}{song2004improving}
 
