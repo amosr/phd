@@ -19,7 +19,7 @@ First, the nodes are partitioned into fusible clusters. Then some kind of maxflo
 
 
 \rev{Better tiling and array contraction for compiling scientific programs}{pike2002better}
-Titanium, a dialect of Java with \tt{foreach} loops that execute in unspecified order over some subset of $\mathbb{Z}^N$.
+Titanium, a dialect of Java with {\tt foreach} loops that execute in unspecified order over some subset of $\mathbb{Z}^N$.
 Instead of static analysis of loop bounds, array bounds and array aliasing, cheap runtime tests are used
 and both optimised and unoptimised versions are generated.
 Instead of modelling register reuse or cache behaviour, the compiler measures program runtime with different settings and chooses the best.
@@ -66,3 +66,40 @@ Reduce memory accesses in cases where a specific array element is used in succes
 The memory access for k[i+1] should be stored in a register and kept for the next iteration's k[i].
 Build a DAG out of loop body (with no loop ??), then create a memory access graph (MAG) to describe the memory dependence of operations over successive iterations.
 After the MAG is created, a register usage scheduling is created and used to decide which registers to use.
+
+
+\rev{Loop Transformations for Restructuring Compilers}{banerjee1993loop}
+The first part focuses on mathematical background: solving linear algebra integer equations, and integer and unimodular matrices.
+Unimodular matrices are integral, and their inverse is also integral and unimodular. GCD can be found by solving a linear equation.
+
+A sequential program has a total order for its execution. In order to make the most of the hardware, a restructuring compiler
+will try to find a new execution order. The new execution order must not change the meaning of the program.
+Th meaning is preserved by obeying the constraints of the `dependence structure' of the program:
+the way memory locations are read from and written to.
+Control flow in conditionals is ignored in this book, as they only treat loop nests of assignment statements.
+
+Types of dependencies for $S \delta T$ ($T$ depends on $S$):
+\begin{itemize}
+\item \emph{Flow dependent}: $S$ writes $M$, $T$ reads $M$
+\item \emph{Anti-dependent}: $S$ reads $M$, $T$ writes
+\item \emph{Output dependent}: $S$ and $T$ both write
+\item \emph{Input dependent}: $S$ and $T$ both read
+\end{itemize}
+
+Input dependences can be ignored for the actual meat.
+
+\emph{Iteration-level} loop transformations execute each iteration of the loop in the same order, but can change the order in which iterations are performed.
+To be valid, each iteration $H(j)$ that depends on an iteration $H(i)$ must still be executed in that order.
+\emph{Iteration graph partitioning} finds the weakly connected components of the iteration dependence graph and executes them in parallel. For each component, its iterations are then performed sequentially.
+For example,
+\begin{code}
+do I = 0, 100
+    X(I) = ...
+    ...  = X(I - 4) + X(I - 6)
+enddo
+\end{code}
+In this case there are two dependences: $H(i)$ depends on $H(i-4)$ and $H(i-6)$.
+The \emph{greatest common divisor} of 4 and 6 is 2, so this can be split into two components: odd and even.
+These components can be executed in parallel.
+
+\emph{Unimodular transforms}

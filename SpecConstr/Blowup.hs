@@ -28,11 +28,11 @@ blah = unstream d
   -- (Perhaps even 186 of them)
   d =        (enumFromToS 1 len `appS` enumFromToS 1 len)
       `zipS` (enumFromToS 1 len `appS` enumFromToS 1 len)
---      `zipS` (enumFromToS 1 len `appS` enumFromToS 1 len)
+      `zipS` (enumFromToS 1 len `appS` enumFromToS 1 len)
 --      `zipS` (enumFromToS 1 10 `appS` enumFromToS 1 10)
 --      `zipS` (enumFromToS 1 10 `appS` enumFromToS 1 10)
 --      `zipS` (enumFromToS 1 10 `appS` enumFromToS 1 10)
   len = 10000000
  
-main = let x = foldl seq (0,0) blah  in putStrLn (show x)
+main = let x = foldl seq ((0,0),0) blah  in putStrLn (show x)
  -- ( Either Int Int, Either Int Int, Maybe Int )

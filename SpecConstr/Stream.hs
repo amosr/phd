@@ -1,7 +1,9 @@
 -- Very simplified Stream functions for showing SpecConstr example.
 --
-{-# LANGUAGE ExistentialQuantification, BangPatterns #-}
+{-# LANGUAGE ExistentialQuantification, BangPatterns, CPP #-}
 module Stream where
+
+#define FORCE
 
 import GHC.Exts ( SpecConstrAnnotation(..) )
 
@@ -16,6 +18,7 @@ data Step a s = Done | Skip s | Yield a s
 {-# INLINE unstream #-}
 unstream :: Stream a -> [a]
 unstream (Stream next s0)
+#ifndef FORCE
  = unfold s0
  where
   {-# INLINE unfold #-}
@@ -24,7 +27,7 @@ unstream (Stream next s0)
       Done       ->     []
       Skip s'    ->     unfold s'
       Yield a s' -> a : unfold s'
-{-
+#else
  = unfold SPEC s0
  where
   {-# INLINE unfold #-}
@@ -33,8 +36,7 @@ unstream (Stream next s0)
       Done       ->     []
       Skip s'    ->     unfold SPEC s'
       Yield a s' -> a : unfold SPEC s'
--}
-
+#endif
 
 {-# INLINE zipS #-}
 zipS :: Stream a -> Stream b -> Stream (a,b)
