@@ -1,11 +1,12 @@
+\section{Partial evaluation}
 
 \rev{Limix: a partial evaluator for partially static structures}{bechet1994limix}
 Splits function specialisation from dead-variable elimination.
 This solves a problem with nested structures that ``standard specialisers'' apparently do not treat.
 May be some relation to the `reallocation problem' we have in GHC, but I'm not certain about that.
 
-\rev{}{bolingbroke2011supercomp}
-\rev{}{bolingbroke2011termination}
+\rev{Improving supercompilation: tag-bags, rollback, speculation, normalisation, and generalisation}{bolingbroke2011supercomp}
+\rev{Termination combinators forever}{bolingbroke2011termination}
 
 
 \rev{A transformation system for developing recursive programs}{burstall1977transformation}
@@ -15,9 +16,9 @@ Seems reminiscent of tupling.
 However, it seems to require user intervention and relies on domain knowledge such as commutativity of addition.
 
 \rev{Worker-wrapper}{gill2009worker}
-\rev{}{mogensen1993constructor}
+\rev{Constructor specialization}{mogensen1993constructor}
 
-\rev{}{peyton2007call}
+\rev{Call-pattern specialisation for Haskell programs}{peyton2007call}
 SpecConstr is an optimisation that specialises recursive functions to remove unnecessary allocation and pattern-matching of constructors.
 When a recursive function pattern matches or destructs one of its arguments and makes a recursive call with a constructor of that argument,
 the recursive call can be specialised for that particular argument so no allocation or unboxing is necessary.
@@ -52,6 +53,6 @@ Really there's no difference that it's strict.
 Explains semantics of a small first-order subset of ML and then shows implementation of specialisation.
 First an environment is built up of call patterns of recursive calls, then those cases are specialised.
 
-\rev{}{thiemann1994higher}
-\rev{}{thiemann1995generation}
+\rev{Higher-order redundancy elimination}{thiemann1994higher}
+\rev{The generation of a higher-order online partial evaluator}{thiemann1995generation}
 

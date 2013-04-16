@@ -1,3 +1,5 @@
+\section{Loops}
+
 \rev{Collective loop fusion for array contraction}{gao1993collective}
 Array contraction transforms array variables into scalar variables,
 potentially allowing them to be stored in registers.
@@ -74,7 +76,7 @@ Unimodular matrices are integral, and their inverse is also integral and unimodu
 
 A sequential program has a total order for its execution. In order to make the most of the hardware, a restructuring compiler
 will try to find a new execution order. The new execution order must not change the meaning of the program.
-Th meaning is preserved by obeying the constraints of the `dependence structure' of the program:
+The meaning is preserved by obeying the constraints of the `dependence structure' of the program:
 the way memory locations are read from and written to.
 Control flow in conditionals is ignored in this book, as they only treat loop nests of assignment statements.
 
@@ -102,4 +104,16 @@ In this case there are two dependences: $H(i)$ depends on $H(i-4)$ and $H(i-6)$.
 The \emph{greatest common divisor} of 4 and 6 is 2, so this can be split into two components: odd and even.
 These components can be executed in parallel.
 
-\emph{Unimodular transforms}
+A \emph{unimodular matrix} is a one-to-one mapping between index spaces.
+A loop transformation on unimodular matrix $U$ is valid if $iU \prec jU$ whenever $H(j)$ depends on $H(i)$,
+that is whenever the $j$th iteration depends on the $i$th, the $i$th iteration executes before the $j$th.
+
+Suppose we have a loop nest where all loops have dependencies and thus cannot be parallelised.
+We want to find a unimodular matrix to translate the loop by, where at least one loop has no dependencies
+and thus can be parallelised.
+
+\emph{Loop permutation} is a special subset of unimodular transformations, where the loops inside a loop nest are rearranged.
+\TODO{I'm not entirely sure what the point is.}
+
+\emph{Loop distribution} analyses the statements inside a loop and splits them out into multiple loops.
+This may allow some resulting loops to be executed in parallel.

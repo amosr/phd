@@ -1,4 +1,5 @@
 #!/bin/bash
-while inotifywait -e modify -r . --exclude ".*.swp"; do
-    LATEX_OPTS="-interaction batchmode" ./dolt
-done
+# while inotifywait -e modify -r . --exclude ".*.swp"; do
+#     LATEX_OPTS="-interaction batchmode" ./dolt
+# done
+watchmedo shell-command --patterns="*.tex;*.bib" --recursive --command='LATEX_OPTS="-interaction batchmode" ./dolt' .
