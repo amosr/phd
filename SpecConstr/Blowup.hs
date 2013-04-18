@@ -32,7 +32,7 @@ blah = unstream d
 --      `zipS` (enumFromToS 1 10 `appS` enumFromToS 1 10)
 --      `zipS` (enumFromToS 1 10 `appS` enumFromToS 1 10)
 --      `zipS` (enumFromToS 1 10 `appS` enumFromToS 1 10)
-  len = 10000000
+  len = 1000
  
 main = let x = foldl seq ((0,0),0) blah  in putStrLn (show x)
  -- ( Either Int Int, Either Int Int, Maybe Int )
