@@ -1,13 +1,26 @@
 \section{Algorithms}
 
-\rev{A hierarchical $O(N \log N)$ force-calculation algorithm}{barnes1986hierarchical}
+\rev{A hierarchical $O(n \log n)$ force-calculation algorithm}{barnes1986hierarchical}
+This describes a method of efficiently, and relatively accurately, approximating the N-body problem. 
+The N-body problem is having $N$ elements all exerting force on each other. A naive approach requires calculating the force between each pair of bodies: $N^2$.
 
-Distribute N-body problem into a heirarchical octree, allowing $n \log n$ instead of $n^2$ interactions.
-Existing hierarchical N-body simulations exist (Appel, Jernigan, Porter) but the loss in accuracy is hard to analyse. Is this because the tree structure is not necessarily a space partitioning?
-A better idea of where the accuracy errors are is possible because the octree is an up-to-date space partitioning.
+Instead, the problem is distributed into a heirarchical space partitioning tree (quadtree or octree, depending on the dimensions).
+Each subtree has an associated centroid describing the centre of gravity of its children.
+When calculating the force on a particular body, the tree is explored. Nearby bodies exert force as usual, but more distant subtrees exert force based on their centroid and skip their children.
+Calculating the force based on the trees reduces the number of interactions to $N \log N$ instead of $N^2$.
+After the force has been calculated for all bodies it is applied, and the tree is recreated using the new positions.
+
+Other hierarchical N-body simulations exist (Appel, Jernigan, Porter) but in these cases the hierarchy does not reflect the spatial relationship of the bodies.
+Because of this, the force of nearby bodies may be approximated by centroids. This makes the loss in accuracy hard to analyse.
+A better idea of where the accuracy errors are is possible with Barnes-Hut because the octree is an up-to-date space partitioning.
 
 \rev{A modified tree code: don't laugh; it runs}{barnes1990modified}
-A modification of Barnes-Hut that is better for vector machines. By sharing some of the 'interaction list' between nearby particles.
+When this was written in 1988, most powerful supercomputers were vector machines.
+To solve N-body for a large dataset, a powerful computer and an efficient method of calculation are required.
+This is when tree-based methods really pay off.
+However, vector computers are not well suited for recursion over trees because it requires branching.
+
+A modification of Barnes-Hut that is better for vector machines. By sharing some of the `interaction list' between nearby bodies.
 Meh.
 
 

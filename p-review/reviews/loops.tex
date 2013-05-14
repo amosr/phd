@@ -1,6 +1,7 @@
 \section{Loops}
 
 \rev{The Software Vectorization Handbook}{bik2004software}
+Introduction to the SSE instructions in x86.
 
 \rev{Collective loop fusion for array contraction}{gao1993collective}
 Array contraction transforms array variables into scalar variables,
@@ -61,6 +62,37 @@ Weightings are added to the edges to prioritise removal of edges and to never re
 For multi-dimensional loops, a loop nest may be interchanged, thus swapping the array access vector.
 
 \rev{Improving Data Locality by Array Contraction}{song2004improving}
+A technique for array contraction called SFC: \emph{shifting}, \emph{fusion} and \emph{contraction}.
+Loop shifting is used to improve opportunities for loop fusion and contraction. 
+Care must be taken when performing loop fusion, as fusion generally increases the local variables of a loop.
+Excessive fusion may introduce too many local variables, causing register contention and cache misses.
+
+Loop shifting is a specialised form of loop normalisation; if two loops have iteration spaces of the same size but different start indices,
+one of the loops can be shifted by the difference, making the iteration spaces the same.
+
+The main idea is \emph{controlled} SFC, which aims to limit a certain type of cache misses called \emph{capacity misses}.
+Capacity misses occur when the same memory location is requested multiple times, but the instructions between the two requests
+and limited cache size have caused the requested location to no longer be available.
+
+A fully associative cache is assumed.
+
+Capacity misses can be identified by looking at each pair of consecutive requests to the same element,
+and counting the number of distinct elements requested between the pair. This is called the \emph{reuse distance}.
+If the reuse distance is greater than the cache size, a capacity miss will occur on the second reference.
+
+Array contraction generally reduces reuse distance: there are fewer distinct elements to reference so it is more likely
+multiple references will be to the same element.
+
+Loop fusion can increase or decrease reuse distance. If the two references were originally in different loops,
+it is likely there will be fewer instructions between each reference after fusion, decreasing the distance.
+On the other hand, if the references are in the same loop, the extra instructions from the other loop
+may increase the reuse distance.
+Loop fusion also tends to increase register contention in a loop, since registers must be allocated for local variables in both loops.
+
+Thus, excessive fusion may increase cache misses and require registers to be spilled out to memory.
+Loop fusion is then only applied when the maximum reuse distance does not exceed the cache size,
+and the register usage does not exceed the available registers.
+
 
 \rev{Loop scheduling with memory access reduction subject to register constraints for DSP applications}{wang2013loop}
 Quite low-level, working on assembly language.
