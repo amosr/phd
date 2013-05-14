@@ -1,0 +1,10 @@
+#!/bin/bash
+if [ -z "$LATEX_OPTS" ]; then
+    export LATEX_OPTS=""
+fi
+
+bibtex Main
+pdflatex $LATEX_OPTS Main.tex
+bibtex Main
+pdflatex $LATEX_OPTS Main.tex
+

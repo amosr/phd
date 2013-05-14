@@ -1,0 +1,106 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{attrib}
+\usepackage{cite}
+\usepackage{setspace}
+\usepackage{amsfonts}
+\usepackage{url}
+
+\pagestyle{myheadings}
+\markright{Amos Robinson, 3400438}
+
+\author{Amos Robinson, 3400438}
+\title{Annotated bibliography}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{myheadings}
+
+\onehalfspacing
+
+\section{Introduction}
+The ubiquity of multi-core processors means that sequential programs can no longer take full advantage of the processor.
+However, writing parallel programs is significantly more difficult than writing sequential programs.
+Nested data parallelism lifts the burden of exploiting multi-cores from the programmer to the compiler-writer.
+Current implementations of nested data parallelism use impressive optimisation techniques such as fusion, but are still unable to compete with handwritten parallel code.
+The aim of my research is to improve the performance of nested data parallelism, making it easier for programmers to write efficient parallel code.
+
+%Because nested data parallelism has focussed on purely functional languages, many well-known imperative optimisations have not been treated. 
+%For example, fusion removes intermediate arrays but can also cause register spilling and cache misses due to multiple loop bodies being condensed into one.
+
+
+\section{Reviews}
+
+\subsection{Vectorisation avoidance}
+\cite{keller2012vectorisation}
+Keller, G., Chakravarty, M., Leshchinskiy, R., Lippmeier, B., and Peyton Jones, S. (2012). Vectorisation avoidance. In \emph{Proceedings of the 2012 symposium on Haskell symposium}, pages 37–-48. ACM.
+
+{\bf Keywords}: nested data parallelism, vectorisation, flattening, optimisation, Haskell.
+
+{\bf Four stars}: Paper provides a key method/approach or analysis technique for my research.
+
+Nested data parallelism relies on the flattening transform, which converts scalar operations into array operations that execute in parallel.
+However, a sequence of array operations will not execute as efficiently as one array traversal with multiple scalar operations.
+This is because each intermediate array must be read from and written to memory, instead of being stored in registers.
+Fusion is one method of removing these intermediate arrays, but fusion may not always occur due to its reliance on inlining and other optimisations. 
+This paper extends flattening with \emph{vectorisation avoidance}, by instead converting multiple sequential scalar operations into a single array operation.
+This effectively gives the result that fusion should, with faster compilation times and less fragility.
+
+While fusion and vectorisation avoidance always reduce allocation of intermediate arrays, excessive fusion can cause other problems such as register spilling or cache misses.
+This paper does not put any limit on the amount of fusion performed, and so may suffer from the same problems.
+Reliable optimisation of parallel programs is an important area for my research topic.
+It is shown that extensions to the flattening transform are useful, and perhaps in my research more extensions such as loop tiling and controlled fusion can be added.
+
+\subsection{Call-pattern specialisation for Haskell programs}
+\cite{peyton2007call}
+Peyton Jones, S. (2007). Call-pattern specialisation for Haskell programs. In \emph{ACM SIGPLAN Notices}, volume 42, pages 327–-337. ACM.
+
+{\bf Keywords}: supercompilation, partial evaluation, optimisation, Haskell.
+
+{\bf Two stars}: Paper describes some important terms or fundamental concepts.
+
+In a purely functional language such as Haskell, loops are often expressed as recursive functions, with mutable loop variables as function arguments. 
+Without mutation, however, any change to the loop variables must be allocated as new objects.
+This is particularly wasteful when objects are allocated only to be used once in the next iteration, then thrown away.
+This paper introduces a new optimisation, \emph{SpecConstr}, that 
+specialises recursive functions to remove unnecessary allocation and pattern-matching of constructors.
+When a recursive function pattern matches or destructs one of its arguments and makes a recursive call with a constructor of that argument,
+the recursive call can be specialised for that particular argument so no allocation or unboxing is necessary.
+
+There is a potential problem with reboxing: when an argument may be specialised but is used as an argument to another function, specialisation may perform more allocation.
+While this optimisation is particularly important for programs produced by fusion, this is a relatively low-level optimisation and my focus is on higher-level optimisations.
+
+
+
+
+
+\subsection{Improving data locality by array contraction}
+\cite{song2004improving}
+Song, Y., Xu, R., Wang, C., and Li, Z. (2004). Improving data locality by array contraction. \emph{Computers, IEEE Transactions on}, 53(9):1073–-1084.
+
+{\bf Keywords}: fusion, cache locality, imperative loops.
+
+{\bf Three stars}: Paper provides some background support to justify my research.
+
+
+Compared to the speed of registers and cache, main memory is incredibly slow.
+Certain optimisations may generally increase efficiency, but can in the worst case cause extra cache misses or register spilling.
+For example, because loop fusion merges the bodies of two or more loops, there are often more local variables
+and memory references in the result, all contending for registers and cache.
+
+Only regular, perfect loop nests are treated: a loop's bounds cannot depend on the current index of an outer loop,
+and only the innermost loop can contain non-loop statements.
+The given language is also a very simple imperative array language.
+Controlled fusion may turn out to be an important aspect of my research,
+since it could solve some problems with excessive fusion.
+Fusion has been explored in functional languages, but \emph{controlled fusion} has not.
+
+
+
+\pagebreak
+\addcontentsline{toc}{chapter}{Bibliography}
+\nocite{*}
+\bibliographystyle{apalike}
+\bibliography{../bibs/Main,../bibs/loops,../bibs/ndp,../bibs/parteval,../bibs/series,../bibs/streams,../bibs/types}
+
+\end{document}
