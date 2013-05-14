@@ -87,10 +87,12 @@ Compared to the speed of registers and cache, main memory is incredibly slow.
 Certain optimisations may generally increase efficiency, but can in the worst case cause extra cache misses or register spilling.
 For example, because loop fusion merges the bodies of two or more loops, there are often more local variables
 and memory references in the result, all contending for registers and cache.
+Some cache misses can be identified by looking at each pair of consecutive requests to the same element, and counting the number of distinct elements requested between the pair.
+This is called the \emph{reuse distance}.
+With controlled fusion, loops are only fused together if the maximum reuse distance does not exceed the cache size. 
 
 Only regular, perfect loop nests are treated: a loop's bounds cannot depend on the current index of an outer loop,
 and only the innermost loop can contain non-loop statements.
-The given language is also a very simple imperative array language.
 Controlled fusion may turn out to be an important aspect of my research,
 since it could solve some problems with excessive fusion.
 Fusion has been explored in functional languages, but \emph{controlled fusion} has not.
