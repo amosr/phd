@@ -24,10 +24,10 @@ However, writing parallel programs is significantly more difficult than writing 
 Nested data parallelism lifts the burden of exploiting multi-cores from the programmer to the compiler-writer.
 Current implementations of nested data parallelism use impressive optimisation techniques such as fusion, but are still unable to compete with handwritten parallel code.
 The aim of my research is to improve the performance of nested data parallelism, making it easier for programmers to write efficient parallel code.
+Because nested data parallelism has focussed on purely functional languages, many well-known imperative optimisations have not been treated. 
+% For example, fusion removes intermediate arrays but can also cause register spilling and cache misses due to multiple loop bodies being condensed into one.
 
-%Because nested data parallelism has focussed on purely functional languages, many well-known imperative optimisations have not been treated. 
-%For example, fusion removes intermediate arrays but can also cause register spilling and cache misses due to multiple loop bodies being condensed into one.
-
+\pagebreak
 
 \section{Reviews}
 
@@ -59,7 +59,7 @@ Peyton Jones, S. (2007). Call-pattern specialisation for Haskell programs. In \e
 
 {\bf Two stars}: Paper describes some important terms or fundamental concepts.
 
-In a purely functional language such as Haskell, loops are often expressed as recursive functions, with mutable loop variables as function arguments. 
+In a purely functional language such as Haskell, loops are often expressed as recursive functions, with mutable loop variables becoming function arguments. 
 Without mutation, however, any change to the loop variables must be allocated as new objects.
 This is particularly wasteful when objects are allocated only to be used once in the next iteration, then thrown away.
 This paper introduces a new optimisation, \emph{SpecConstr}, that 
@@ -68,7 +68,12 @@ When a recursive function pattern matches or destructs one of its arguments and 
 the recursive call can be specialised for that particular argument so no allocation or unboxing is necessary.
 
 There is a potential problem with reboxing: when an argument may be specialised but is used as an argument to another function, specialisation may perform more allocation.
-While this optimisation is particularly important for programs produced by fusion, this is a relatively low-level optimisation and my focus is on higher-level optimisations.
+Excessive specialisation is also a risk, as specialisation increases the code size, potentially leading to longer compilation times and worse cache performance when the code doesn't fit into the cache line.
+
+This paper introduces an optimisation that is particularly important for programs produced by fusion,
+but is also useful for general programs. This kind of partial compile-time evaluation is also key to modern techniques such as supercompilation.
+The relation to my research is that these optimisations are necessary for fusion, and must be understood to be taken advantage of,
+but my focus is more on higher-level optimisations that come before SpecConstr.
 
 
 
@@ -93,6 +98,9 @@ With controlled fusion, loops are only fused together if the maximum reuse dista
 
 Only regular, perfect loop nests are treated: a loop's bounds cannot depend on the current index of an outer loop,
 and only the innermost loop can contain non-loop statements.
+
+This paper's contribution is an efficient way to combine fusion, shifting and array contraction,
+without increasing compilation times too much, and using controlled fusion to find the optimal loops to fuse.
 Controlled fusion may turn out to be an important aspect of my research,
 since it could solve some problems with excessive fusion.
 Fusion has been explored in functional languages, but \emph{controlled fusion} has not.
