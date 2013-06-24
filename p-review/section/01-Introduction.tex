@@ -1,0 +1,21 @@
+
+\section{Introduction}
+As transistors continue to decrease in size, as they have been for the last fifty years, more transistors are able to fit into a single processor.
+Historically this has led to faster processors, allowing programs to take advantage of the increased speed with no effort from the programmer.
+Recently, however, this increase in processor speed has come to a halt.
+Being unable to increase processor speed, manufacturers have instead started focussing the new transistors on multi-core processors.
+
+The ubiquity of multi-core processors means that sequential programs can no longer take full advantage of the processor.
+However, writing parallel programs is significantly more difficult than writing sequential programs.
+Nested data parallelism lifts the burden of exploiting multi-cores from the programmer to the compiler-writer.
+Current implementations of nested data parallelism use impressive optimisation techniques such as fusion, but are still unable to compete with handwritten parallel code.
+The aim of my research is to improve the performance of nested data parallelism, making it easier for programmers to write efficient parallel code.
+Because nested data parallelism has focussed on purely functional languages, many well-known imperative optimisations have not been treated.
+
+Purely functional languages, such as Haskell, are more restricted than impure imperative languages
+in the sense that arbitrary expressions may not perform side-effects such as destructive updates.
+This restriction, however, turns out to have serious benefits:
+an optimising compiler is able to reorder expressions to gain better performance,
+without any risk of changing the meaning of the program.
+From an engineering perspective also, the separation of side-effects from pure computation leads to clearer, easier to understand and verify code.
+
