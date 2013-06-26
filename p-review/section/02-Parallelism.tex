@@ -24,153 +24,113 @@ to find the best places to introduce parallelism.
 
 
 \subsection{Flat data parallelism}
-Flat data parallelism such as Repa\cite{keller2010regular} and Accelerate\cite{mcdonell2013optimising}
-is a restricted form of data parallelism that disallows nested parallelism: only the top-most computation is performed in parallel.
+Flat data parallelism is a restricted form of data parallelism that disallows nested parallelism:
+only the top-most computation is performed in parallel.
 To ensure a balanced load across parallel computations, only regular structures such as rectangular arrays can be used.
+Programs are expressed using combinators such as @map@, @filter@, @sum@ and @fold@.
 
 Accelerate is an \emph{embedded domain-specific language} in Haskell, specifically for running parallel computations on graphics processors.
-As a restricted domain-specific language, it targets graphics processors\cite{chakravarty2011accelerating} and is able to use fusion\cite{mcdonell2013optimising}.
+As a restricted domain-specific language, it targets graphics processors\cite{chakravarty2011accelerating} and uses fusion to achieve speeds similar to CUDA\cite{mcdonell2013optimising}.
 
 Repa is a Haskell library with combinator support for regular parallel array computations\cite{keller2010regular}.
-It uses type indices to guide fusion\cite{lippmeier2012guiding} and fancy footwork to support efficient stencil convolution\cite{lippmeier2011efficient}.
+Type indices are used to distinguish between so-called \emph{delayed arrays} and \emph{manifest arrays}.
+Delayed arrays will not be reified in memory at runtime, but are instead expressed as functions of the array index.
+With sufficient inlining and other general purpose optimisations, delayed arrays will be removed and fused together\cite{lippmeier2012guiding}.
+Efficient stencil convolution is supported as a special case.
+To remove branching from the worker loops, the edges of a stencil are computed in different loops\cite{lippmeier2011efficient}.
+
+Many algorithms are more naturally expressed using nested parallelism, such as the hierarchical N-body calculation\cite{barnes1986hierarchical} algorithm and sparse-matrix vector multiplication.
+For these algorithms, flat data parallelism is insufficient.
 
 
 \subsection{Nested data parallelism}
-Data parallel Haskell\cite{chakravarty2007data}, \nesl\cite{blelloch1995nesl}.
+Nested data parallelism, as introduced in a seminal paper by Blelloch\cite{blelloch1990vector},
+uses a transform known as \emph{flattening} to convert nested parallelism into flat data parallelism
+while maintaining a balanced load across processors.
 
+A language specifically for nested data parallelism, \nesl\cite{blelloch1995nesl},
+uses the flattening transform to remove nested parallelism.
+It targets a virtual machine called \vcode\cite{blelloch1993implementation}
+which is then compiled to C to run on vector machines such as CRAY.
+Many example programs have been implemented in \nesl\cite{blelloch1996programming}
+but it is not a general purpose language and does not support higher-order functions\cite{leshchinskiy2005higher} or recursive structures \cite{keller1998flattening}.
 
-\subsubsection{Flattening}
+Attempts have been made to introduce nested data parallelism to imperative languages such as Fortran\cite{au1997enlarging}.
+These have the benefit of taking advantage of existing compiler optimisations.
+The problem with targeting an impure language, though,
+is that arbitrary expressions may perform side-effects.
+This severely limits the places where parallelism may be introduced, as performing side-effects in parallel can change the meaning of the program.
 
-\rev{Enlarging the Scope of Vector-Based Computations: Extending Fortran 90 by Nested Data Parallelism}{au1997enlarging}
-Vector computers are good for flat data parallelism, which requires regular data, and so languages like Fortran only support rectangular array parallelism.
-Nested data parallelism can be converted to flat data parallelism with a \emph{flattening} transform.
-An extension to Fortran 90 is shown that flattens nested data parallelism, allowing existing optimising Fortran compilers to use the vector machinery.
+\subsubsection{Data Parallel Haskell}
+Data Parallel Haskell (DPH) is an implementation of nested data parallelism for Haskell\cite{chakravarty2007data}.
+The original flattening transform is extended to support higher-order functions\cite{leshchinskiy2006higher}, a common pattern in Haskell,
+and arbitrary sum, product and recursive data types\cite{chakravarty2000more}.
 
-\rev{Scans as Primitive Parallel Operations}{blelloch1989scans}
-If distributed vector machines implemented scan operations on vectors, much time could be saved that would otherwise be spent waiting for memory accesses to return.
-Explanation of radix sort example.
-Segmented scan operations use a vector of flags the same length as the values. I guess this totally disallows empty segments, which makes sense. True flag indicates the start of a segment. What happens if there is no True flag at the start..?
-Clever implementation of Quicksort using segmented scans and iteratively splitting each segment into more subsegments. Using the segment flag representation allows very easy splitting.
-It seems quite disingenuous to claim ``constant time for a vector of size n, provided there are n nodes in the machine''. It does deal with this eventually though, in the load-balancing section.
-Hardware description of a tree scan.
+Instead of targeting vector machines like \nesl, DPH targets symmetric multi-processor (SMP) machines.
+Fusion is performed to remove intermediate arrays, but care must be taken not to reduce parallelism\cite{chakravarty1999portable}.
+This is solved by partitioning the program into local operations,
+requiring only some small chunk of the array,
+and global operations, requiring thread synchronisation\cite{keller1999distributed}.
+If only local operations are fused, crossing no global boundaries, no parallelism will be lost.
 
-\rev{Vector Models for Data-Parallel Computing}{blelloch1990vector}
-Book covering scan primitives and basic vectorisation/flattening.
-Must reread this to understand the flattening they use.
+Unlike \nesl, DPH does not require the entire program to be written using nested data parallelism,
+and supports partial vectorisation\cite{chakravarty2008partial}.
 
-\rev{A Comparison of Sorting Algorithms for the Connection Machine CM-2}{blelloch1991comparison}
-Different sorting algorithms are implemented and compared for the connection machine. Irrelevant.
-
-\rev{Implementation of a Portable Nested Data-Parallel Language}{blelloch1993implementation}
-Goes through the implementation of \nesl, but only the VCODE (virtual machine) and CVL (parallel primitives library).
-Doesn't actually talk about flattening or vectorisation.
-Irrelevant.
-
-\rev{\nesl: A Nested Data-Parallel Language}{blelloch1995nesl}
-This is more like a user guide / tutorial for programming in \nesl, rather than any information about how it is implemented.
-
-\rev{Programming Parallel Algorithms}{blelloch1996programming}
-More example programs in \nesl...
-
-
-\rev{How Portable is Nested Data Parallelism?}{chakravarty1999portable}
-Compilers for nested data parallelism have been implemented for many different architectures (vector, scalar / single, shared or distributed memory)
-but previously these compilers have only targeted one architecture with optimisations specific to that architecture.
-These different architectures require significantly different optimisation techniques to achieve good performance:
-vector machines work well with regular vector operations.
-On the other hand RISC processors, due to their limited registers,
-perform better on complex operations on a small set of scalars.
-
-In this paper, flattening is combined with fusion, to remove intermediate allocations and achieve better cache performance.
-The flattening transform remains the same for all architectures, but fusion is tuned specific to each architecture.
-
-A potential problem with fusion, however, is that it may in fact reduce parallelism. 
-To solve this, another transform is added that partitions the program into local and global operations.
-By fusing only local operations across no global boundaries, no parallelism will be lost.
-
-The code generation must also be tuned specific to each architecture; despite targeting C,
-care must still be taken to ensure loops map to vector operations on vector machines.
-
-
-\rev{More Types for Nested Data Parallel Programming}{chakravarty2000more}
-Blelloch \& Sabot's original flattening transformation didn't support general sum types, recursive types, or higher-order functions. Recursive types have been shown in \cite{keller1998flattening}.
-This generalises flattening to support the full range of types in Haskell.
-By formalising the flattening transformation in a lambda calculus they are able to easier express separate compilation.
-
-\rev{Nepal - Nested Data-Parallelism in Haskell}{chakravarty2001nepal}
-\rev{An Approach to Fast Arrays in Haskell}{chakravarty2003approach}
-\rev{Data Parallel Haskell: a status report}{chakravarty2007data}
-\rev{Partial Vectorisation of Haskell Programs}{chakravarty2008partial}
-
-\rev{Harnessing the Multicores: Nested Data Parallelism in Haskell}{jones2008harnessing}
-
-
-\rev{Flattening trees}{keller1998flattening}
-Problem: \nesl etc flattening transform only supports homogenous vectors, so trees are awkward to program.
-The flattening transform is extended to allow user-defined recursive types.
-
-\rev{On the distributed implementation of aggregate data structures by program transformation}{keller1999distributed}
-Separating local from global computations, so that fusion can be applied to only local computations.
---REREAD
-
-
-\rev{Costing nested array codes}{lechtchinsky2002costing}
-\rev{Higher order flattening}{leshchinskiy2006higher}
-
-\rev{Work efficient higher-order vectorisation}{lippmeier2012work}
-
-
-\subsubsection{Vectorisation}
-
-\rev{Higher-order nested data parallelism: semantics and implementation}{leshchinskiy2005higher}
-Formalisation of closure conversion and flattening. 
-
-In the standard lambda calculus, data and code are somewhat inseparable with partial application capturing data.
-This means that the flattening transform is not able to operate on partial applications or higher-order functions.
-Closure conversion makes the capturing of data explicit, allowing the flattening transform to operate on captured data.
-
-The flattening transform converts nested data parallelism into flat data parallelism.
-This is achieved by storing nested arrays as a flat data array and a separate segment descriptor describing the layout of the nesting.
-Each function is then `lifted' to a parallel computation, producing a new function equivalent to $\mbox{map} f$.
-
-Nested maps on these nested arrays can then be implemented by simply mapping over the data array and reusing the original segment descriptor,
-since the structure of the nesting has not changed.
+The original flattening transform also increases the time and space complexity of the program,
+as flattening causes data to be replicated multiple times,
+and if fusion does not occur correctly, such intermediate structures will be reified in memory.
+The time complexity problem can be fixed by using a clever representation, making replication constant time\cite{lippmeier2012work}.
+This does not solve the memory problem, however.
 
 As with all optimisations, conversion from nested data parallelism to flat data parallelism should be semantics preserving:
-the original program's meaning must remain unchanged.
+the original program's meaning must remain unchanged\cite{leshchinskiy2005higher}.
 This is complicated by the fact that Haskell is a lazy language, whereas, for efficiency, strict unboxed arrays are used to represent data.
 Several tricks are used to preserve laziness while still using strict unboxed arrays.
 
-
-\subsubsection{Vectorisation avoidance}
-
-\rev{Vectorisation avoidance}{keller2012vectorisation}
-Flattening converts scalar operations into array operations, even for intermediate scalars.
+Flattening converts scalar operations into array operations, even for intermediate scalars\cite{keller2012vectorisation}.
 This means that operations that once were simple additions on registers must now work on arrays in memory.
 Array fusion can often remove these intermediate structures, but fusion relies heavily on other optimisations such as inlining,
 which may not always occur due to sharing. Excessive inlining can also cause code blowup in the compilation process,
 leading to long compile times.
-
 Instead of vectorising an entire program and then relying on fusion to remove intermediate arrays,
-it is shown that identifying scalar operations and not vectorising them is less fragile.
+identifying scalar operations and not vectorising them is less fragile.
 
-This is achieved in three steps:
-\begin{enumerate}
-\item labelling: each subexpression is classified as parallel, scalar, etc
-\item encapsulation: the labelled syntax tree is traversed and maximal sequential subexpressions are lifted.
-The lifted lambdas are given a new label, encapsulated
-\item vectorisation: nested data parallelism is removed by flattening, but any expressions labelled 'encapsulated' are not vectorised
-\end{enumerate}
 
-Pairs of Scalars are not treated.
-There is a problem of load imbalance when treating conditionals and recursive functions.
-If one branch of an \verb/if/ is significantly expensive, it may turn out that when this is executed over a large vector,
-one core has to do all the expensive branches and the others only have simple branches.
-One potential solution is to randomise the input vector before balancing it, to make an even distribution more likely.
+
+
+%\rev{Scans as Primitive Parallel Operations}{blelloch1989scans}
+%If distributed vector machines implemented scan operations on vectors, much time could be saved that would otherwise be spent waiting for memory accesses to return.
+%Explanation of radix sort example.
+%Segmented scan operations use a vector of flags the same length as the values. I guess this totally disallows empty segments, which makes sense. True flag indicates the start of a segment. What happens if there is no True flag at the start..?
+%Clever implementation of Quicksort using segmented scans and iteratively splitting each segment into more subsegments. Using the segment flag representation allows very easy splitting.
+%It seems quite disingenuous to claim ``constant time for a vector of size n, provided there are n nodes in the machine''. It does deal with this eventually though, in the load-balancing section.
+%Hardware description of a tree scan.
+
+% \rev{A Comparison of Sorting Algorithms for the Connection Machine CM-2}{blelloch1991comparison}
+% Different sorting algorithms are implemented and compared for the connection machine. Irrelevant.
+% \rev{Nepal - Nested Data-Parallelism in Haskell}{chakravarty2001nepal}
+% \rev{Harnessing the Multicores: Nested Data Parallelism in Haskell}{jones2008harnessing}
+% \rev{Costing nested array codes}{lechtchinsky2002costing}
+
 
 
 
 
 \subsection{Feedback directed automatic parallelism}
-Automatic feedback-directed implicit parallelism in Mercury \cite{bone2010automatic}.
+
+Automatic parallelism, as in Mercury\cite{bone2010automatic},
+is able to parallelise more general programs than nested data parallelism,
+but at the cost of compiler simplicity.
+
+Feedback directed parallelism relies on the program being run multiple times,
+and each time the program is recompiled.
+The compiler uses information from the previous runs to determine the best place to introduce parallelism.
+
+Mercury, a logic language, has many similarities to Haskell: it is pure, statically typed, and has type inference.
+The purity allows the compiler to know where it is safe to introduce parallelism.
+
+Automatic parallelism is a far more challenging problem than nested data parallelism,
+since the programs do not use any known set of combinators or structure.
+For this reason, and because many important scientific problems can be solved with nested data parallelism\cite{blelloch1996programming}, 
+automatic parallelism will not be discussed further.
 
