@@ -1,239 +1,105 @@
-\section{Loops}
+\section{Optimisations}
+
+While the flattening transform for nested data parallelism is quite simple,
+it alone cannot achieve performance that competes with that of hand-written C code.
+This section discusses the optimisations required to get such performance.
+Most of these optimisations are general purpose, and applicable to not only nested data parallel programs.
+
+Optimisations for pure languages can make use of the knowledge that arbitrary expressions are side-effect free.
+Two classes of optimisations are particularly important for nested data parallel programs in pure languages: fusion and constructor specialisation.
+Impure languages must be more conservative in the transformations they apply, in order to preserve the meaning of the program.
+
 
 \subsection{Fusion}
-Short-cut fusion techniques such as stream fusion \cite{coutts2007streamfusion}
-work by simply fusing adjacent producers and consumers together.
-This relies on general purpose optimisations such as inlining to bring producers and consumers closer. 
+
+Fusion merges array producers with consumers, removing the need to allocate intermediate arrays in memory.
+
 
 \subsubsection{Short-cut fusion}
 
-\rev{Haskell Beats C Using Generalized Stream Fusion}{mainland2013haskell}
+Short-cut fusion includes techniques such as stream fusion\cite{coutts2007streamfusion},
+@fold@/@build@ fusion\cite{gill1993shortcut}
+and functional array fusion\cite{chakravarty2001functional, chakravarty2003approach}.
+These techniques all work by fusing adjacent producers and consumers together.
+This relies on general purpose optimisations such as inlining to bring producers and consumers closer. 
 
-\rev{Functional Array Fusion}{chakravarty2001functional}
-Fusion on unboxed arrays. Two combinators are used: loopP and replicateP.
-loopP is a complicated loop that is a combination of filter, map, segmented fold, etc.
-@replicateP n e@ simply creates an array of length @n@ full of elements @e@.
-Rewrite rules are used to fuse adjacent loops and replicates; a loop over a replicate is
-fused into a simple replicate of unit, since that is very cheap.
+A recent paper shows the possibility of fusion producing SIMD-vector instructions\cite{bik2004software} that operate on multiple elements at a time\cite{mainland2013haskell}.
+This allows significant speedups.
 
-\rev{An Approach to Fast Arrays in Haskell}{chakravarty2003approach}
+There is a balance between inlining and code blowup, however.
+Too much inlining and the code will become too large, leading to long compilation times and poor cache performance when a loop kernel does not fit in the instruction line.
+As short-cut fusion is a simple local transformation, it can be implemented using general rewrite rule facilities\cite{jones2001playingby} without modifying the compiler.
+The local nature of short-cut fusion comes at a price, however, when a single producer has multiple consumers.
+As the producer cannot be inlined into both consumers without potentially duplicating work, the producer must be reified in memory.
 
 \subsubsection{Flow fusion}
 
-A new method known as flow fusion\cite{lippmeier2013flow}, however, uses a more global analysis
-and can deal with branching dataflows that short-cut fusion cannot.
+A new method that we have been working on is known as flow fusion\cite{lippmeier2013flow}.
+It uses a more global analysis and can deal with branching dataflows that short-cut fusion cannot.
+It analyses an entire function of combinator-based `loops' at a time and schedules the combinators into as few loops as possible.
+This analysis is based on Waters' series expressions\cite{waters1991automatic}, using Shivers' loop anatomy\cite{shivers2005anatomy} to merge skeleton code for loops.
+This method is similar to compilation for dataflow languages\cite{johnston2004advances}.
+
+This requires more complicated implementation than short-cut fusion, in the form of a compiler plugin.
+As it is still very new, no research has been done into SIMD instructions.
+
+
+\subsubsection{Loop fusion and array contraction}
+
+Fusion in imperative languages is generally expressed as two stages:
+loop nests with the same index space are \emph{fused} together,
+then intermediate arrays are \emph{contracted} into scalars or smaller buffers.
+This requires a \emph{loop dependency graph}\cite{gao1993collective} to be created,
+to calculate which loops can be fused without changing the order of writes and reads to arrays.
+Loops may have their index spaces reversed or otherwise modified, in order to allow further fusion.
+Sarkar shows that the optimal loop configuration can be found with a two-colouring of a graph\cite{sarkar1991optimization}.
+
+Such optimisations may generally increase efficiency, but can in the worst case cause extra cache misses or register spilling.
+Loop fusion merges the bodies of two or more loops, which means there are often more local variables
+and memory references in the result, all contending for registers and cache.
+Some cache misses can be identified by looking at each pair of consecutive requests to the same element, and counting the number of distinct elements requested between the pair.
+This is called the \emph{reuse distance}\cite{song2004improving}.
+With controlled fusion, loops are only fused together if the maximum reuse distance does not exceed the cache size. 
+
+In cases where a successive loop iteration uses the output of the previous loop iteration, memory reads can be reduced by reusing the register value\cite{wang2013loop}.
+
+Unimodular matrices are used to find new execution orders of loops, where the original index order cannot be parallelised\cite{banerjee1993loop}.
+For example, a 2-d loop whose $(x,y)$th iteration depends on the output of its $(x-1,y-1)$th iteration cannot be trivially parallelised.
+If the execution order is changed, however, the several threads could work diagonally through the array at the same time.
+
+These imperative optimisations require all loops to only include trivially non-side-effecting statements.
+If loops had arbitrary function calls, the compiler cannot generally know whether these function calls had side-effects,
+and would not be certain that reordering the calls would be safe.
+This problem does not occur in a pure language, as all functions are assured to be side-effect free.
+
+\subsection{Alias analysis}
+\TODO{Aliasing problems in flow fusion output}
+
+\TODO{Tran's thesis on distinct witnesses, Robert's thesis?}
 
 \subsection{Constructor specialisation}
 
-\rev{Limix: a partial evaluator for partially static structures}{bechet1994limix}
-Splits function specialisation from dead-variable elimination.
-This solves a problem with nested structures that ``standard specialisers'' apparently do not treat.
-May be some relation to the `reallocation problem' we have in GHC, but I'm not certain about that.
+Constructor specialisation removes superfluous allocations from loops\cite{bechet1994limix},
+where the allocation is used and thrown away immediately at the start of the next iteration.
 
-\rev{Improving supercompilation: tag-bags, rollback, speculation, normalisation, and generalisation}{bolingbroke2011supercomp}
-\rev{Termination combinators forever}{bolingbroke2011termination}
-
-
-\rev{A transformation system for developing recursive programs}{burstall1977transformation}
-Very interesting system of unfolding and then folding recursive definitions.
-With some cleverness they are able to rewrite several recursive calls into a single recursion.
-Seems reminiscent of tupling.
-However, it seems to require user intervention and relies on domain knowledge such as commutativity of addition.
-
-\rev{Worker-wrapper}{gill2009worker}
-\rev{Constructor specialization}{mogensen1993constructor}
-
-\rev{Call-pattern specialisation for Haskell programs}{peyton2007call}
-SpecConstr is an optimisation that specialises recursive functions to remove unnecessary allocation and pattern-matching of constructors.
+In a purely functional language such as Haskell, loops are often expressed as recursive functions, with mutable loop variables becoming function arguments. 
+Without mutation, however, any change to the loop variables must be allocated as new objects\cite{peyton2007call}.
+This is particularly wasteful when objects are allocated only to be used once in the next iteration, then thrown away.
+A solution to this is to specialise recursive functions to remove unnecessary allocation and pattern-matching of constructors.
 When a recursive function pattern matches or destructs one of its arguments and makes a recursive call with a constructor of that argument,
 the recursive call can be specialised for that particular argument so no allocation or unboxing is necessary.
-This is done in three stages;
-\begin{enumerate}
-\item
-Identify the call patterns: recursive function call, with at least one argument being a constructor application that is pattern-matched elsewhere in the body.
-\item
-Specialise: the function is copied and simplified for the case of that particular constructor argument
-\item
-Propagate: the existing rewrite rule system is used to find any calls to the functions with known constructors as arguments, and rewritten to call the specialised version.
-\end{enumerate}
-Additional refinements are used to decide which functions to specialise. This is a trade-off between runtime efficiency and code explosion:
-\begin{enumerate}
-\item
- take into account variables that have been let-bound or pattern matches, when used as arguments
-\item
- record nested pattern matches
-\item
- when specialising a function, collect new patterns from the specialised right-hand side
-\item
- mutual recursion
-\end{enumerate}
-There is a potential problem with reboxing: when an argument may be specialised but is used as an argument to another function, specialisation may perform more allocation.
 
+This has been implemented for both pure and impure languages such as Haskell and ML\cite{thiemann1993avoiding, mogensen1993constructor}.
 
+This kind of partial compile-time evaluation is also key to modern techniques such as supercompilation\cite{bolingbroke2011supercomp}.
+Constructor specialisation is also a generalisation of another technique, worker-wrapper transform\cite{gill2009worker},
+that creates a specialised worker function that operates on unboxed data structures.
 
+Excessive specialisation is also a risk, as specialisation increases the code size, potentially leading to longer compilation times and worse cache performance when the code doesn't fit into the cache line.
+I have been able to fix this excessive specialisation in the Glasgow Haskell Compiler by first attempting to \emph{seed} the specialisation with the call patterns the function is first called with.
+This reduces the number of specialisations to those that will actually be used, instead of generating all possible specialisations.
 
-\rev{Avoiding repeated tests in pattern matching}{thiemann1993avoiding}
-Very similar to SpecConstr, except for a strict functional language.
-Really there's no difference that it's strict.
-Explains semantics of a small first-order subset of ML and then shows implementation of specialisation.
-First an environment is built up of call patterns of recursive calls, then those cases are specialised.
+Other forms of constructor specialisation / supercompilation have been developed that are able to rewrite multiple recursive calls into a single recursion\cite{burstall1977transformation}.
+This has impressive results, but it requires user intervention and relies on domain knowledge such as commutativity of addition.
 
-\rev{Higher-order redundancy elimination}{thiemann1994higher}
-\rev{The generation of a higher-order online partial evaluator}{thiemann1995generation}
-
-
-
-\subsection{Imperative optimisations}
-
-\rev{The Software Vectorization Handbook}{bik2004software}
-Introduction to the SSE instructions in x86.
-
-\rev{Collective loop fusion for array contraction}{gao1993collective}
-Array contraction transforms array variables into scalar variables,
-potentially allowing them to be stored in registers.
-Loops are fused in order to maximise array contraction opportunities.
-
-Reads and writes to arrays are far more costly than scalar variables, since
-scalars can be stored in registers but arrays must go through the memory system.
-Even if the requested memory is in cache, a cache hit is still far more expensive than a register read.
-
-A \emph{loop dependence graph} (LDG) is created for a single-entry, single-exit region with $k$ ``identically control dependent'' perfect loop nests with equivalent index spaces.
-A loop nest is a set of nested loops; a perfect loop nest only has statements inside the innermost loop.
-There is a node in the LDG for each loop nest.
-The edges are loop-independent data dependencies, which are classified as \emph{fusible} or \emph{nonfusible}.
-Fusing \emph{nonfusible} edges would violate data dependence. \emph{Fusible} edges can be \emph{contractable} or \emph{noncontractable}.
-Fusing a \emph{contractable} edge will save memory access if data is already available in registers.
-This can be generalised to allow distinct index spaces by marking any dependencies between difference spaces nonfusible. A single statement is a degenerate case (loop with unit index space).
-
-First, the nodes are partitioned into fusible clusters. Then some kind of maxflow/mincut algorithm is applied...
-
-
-\rev{Better tiling and array contraction for compiling scientific programs}{pike2002better}
-Titanium, a dialect of Java with {\tt foreach} loops that execute in unspecified order over some subset of $\mathbb{Z}^N$.
-Instead of static analysis of loop bounds, array bounds and array aliasing, cheap runtime tests are used
-and both optimised and unoptimised versions are generated.
-Instead of modelling register reuse or cache behaviour, the compiler measures program runtime with different settings and chooses the best.
-Tile space $T$ is defined at $\mathbb{Z}^N \times {0, ... , K - 1}$ where the tile size is $K$.
-
-The array contraction here is more to do with replacing arrays with smaller temporary buffer arrays, than scalar variables.
-The tiling is chosen so that the buffers can be small.
-
-\rev{Locality Optimizations for Multi-Level Caches}{rivera1999locality}
-It turns out that most cache-aware optimisations can benefit from multi-level caches just by targeting L1.
-
-\rev{Optimization of Array Accesses by Collective Loop Transformations}{sarkar1991optimization}
-Array contraction is presented: replacing an array variable with a scalar variable or a buffer with a few scalar variables.
-Loops are analysed; when a loop produces an array in the same order as it is consumed in another loop, there is an opportunity to
-remove the intermediate array.
-
-Access vectors of arrays are determined by the array subscripts inside the loop.
-A \emph{loop communication graph} is created from a set of loop nests. A node is created for each loop nest, with input ports and output ports for each input and output array of the loop. Each port is annotated with the array's access vector.
-Edges represent array communication between an output port of the source loop nest and the input port of the destination loop nest.
-An edge is \emph{consistent} if both ports have the same array access vector, meaning they access the array in the same way.
-
-The goal, then, is to minimise the number of inconsistent ports to allow more opportunities for array contraction.
-\begin{itemize}
-\item
-\emph{Loop reversal} flips an array's access vector and all the subscripts inside the loop, by reversing the index space.
-\end{itemize}
-For one dimension, the problem of choosing which loops to reverse is mapped to a 2-colouring problem.
-A new graph is created with a positive and negative for each node in the LCG. For each edge, the positive of the input is connected to the negative output if the edge is consistent, otherwise the positive output.
-This means that two nodes connected by an inconsistent edge cannot have the same colour in their positive node.
-
-The graph is then coloured and for each positive node, if it is colour one it is left alone, if it is colour two it is reversed.
-If the graph cannot be coloured an edge is removed and colouring is again attempted.
-Weightings are added to the edges to prioritise removal of edges and to never remove the edges between positive and negative of one node.
-
-For multi-dimensional loops, a loop nest may be interchanged, thus swapping the array access vector.
-
-\rev{Improving Data Locality by Array Contraction}{song2004improving}
-A technique for array contraction called SFC: \emph{shifting}, \emph{fusion} and \emph{contraction}.
-Loop shifting is used to improve opportunities for loop fusion and contraction. 
-Care must be taken when performing loop fusion, as fusion generally increases the local variables of a loop.
-Excessive fusion may introduce too many local variables, causing register contention and cache misses.
-
-Loop shifting is a specialised form of loop normalisation; if two loops have iteration spaces of the same size but different start indices,
-one of the loops can be shifted by the difference, making the iteration spaces the same.
-
-The main idea is \emph{controlled} SFC, which aims to limit a certain type of cache misses called \emph{capacity misses}.
-Capacity misses occur when the same memory location is requested multiple times, but the instructions between the two requests
-and limited cache size have caused the requested location to no longer be available.
-
-A fully associative cache is assumed.
-
-Capacity misses can be identified by looking at each pair of consecutive requests to the same element,
-and counting the number of distinct elements requested between the pair. This is called the \emph{reuse distance}.
-If the reuse distance is greater than the cache size, a capacity miss will occur on the second reference.
-
-Array contraction generally reduces reuse distance: there are fewer distinct elements to reference so it is more likely
-multiple references will be to the same element.
-
-Loop fusion can increase or decrease reuse distance. If the two references were originally in different loops,
-it is likely there will be fewer instructions between each reference after fusion, decreasing the distance.
-On the other hand, if the references are in the same loop, the extra instructions from the other loop
-may increase the reuse distance.
-Loop fusion also tends to increase register contention in a loop, since registers must be allocated for local variables in both loops.
-
-Thus, excessive fusion may increase cache misses and require registers to be spilled out to memory.
-Loop fusion is then only applied when the maximum reuse distance does not exceed the cache size,
-and the register usage does not exceed the available registers.
-
-
-\rev{Loop scheduling with memory access reduction subject to register constraints for DSP applications}{wang2013loop}
-Quite low-level, working on assembly language.
-Reduce memory accesses in cases where a specific array element is used in successive iterations.
-  for (int i =...)
-    k[i] = k[i] * k[i+1];
-The memory access for k[i+1] should be stored in a register and kept for the next iteration's k[i].
-Build a DAG out of loop body (with no loop ??), then create a memory access graph (MAG) to describe the memory dependence of operations over successive iterations.
-After the MAG is created, a register usage scheduling is created and used to decide which registers to use.
-
-
-\rev{Loop Transformations for Restructuring Compilers}{banerjee1993loop}
-The first part focuses on mathematical background: solving linear algebra integer equations, and integer and unimodular matrices.
-Unimodular matrices are integral, and their inverse is also integral and unimodular. GCD can be found by solving a linear equation.
-
-A sequential program has a total order for its execution. In order to make the most of the hardware, a restructuring compiler
-will try to find a new execution order. The new execution order must not change the meaning of the program.
-The meaning is preserved by obeying the constraints of the `dependence structure' of the program:
-the way memory locations are read from and written to.
-Control flow in conditionals is ignored in this book, as they only treat loop nests of assignment statements.
-
-Types of dependencies for $S \delta T$ ($T$ depends on $S$):
-\begin{itemize}
-\item \emph{Flow dependent}: $S$ writes $M$, $T$ reads $M$
-\item \emph{Anti-dependent}: $S$ reads $M$, $T$ writes
-\item \emph{Output dependent}: $S$ and $T$ both write
-\item \emph{Input dependent}: $S$ and $T$ both read
-\end{itemize}
-
-Input dependences can be ignored for the actual meat.
-
-\emph{Iteration-level} loop transformations execute each iteration of the loop in the same order, but can change the order in which iterations are performed.
-To be valid, each iteration $H(j)$ that depends on an iteration $H(i)$ must still be executed in that order.
-\emph{Iteration graph partitioning} finds the weakly connected components of the iteration dependence graph and executes them in parallel. For each component, its iterations are then performed sequentially.
-For example,
-\begin{code}
-do I = 0, 100
-    X(I) = ...
-    ...  = X(I - 4) + X(I - 6)
-enddo
-\end{code}
-In this case there are two dependences: $H(i)$ depends on $H(i-4)$ and $H(i-6)$.
-The \emph{greatest common divisor} of 4 and 6 is 2, so this can be split into two components: odd and even.
-These components can be executed in parallel.
-
-A \emph{unimodular matrix} is a one-to-one mapping between index spaces.
-A loop transformation on unimodular matrix $U$ is valid if $iU \prec jU$ whenever $H(j)$ depends on $H(i)$,
-that is whenever the $j$th iteration depends on the $i$th, the $i$th iteration executes before the $j$th.
-
-Suppose we have a loop nest where all loops have dependencies and thus cannot be parallelised.
-We want to find a unimodular matrix to translate the loop by, where at least one loop has no dependencies
-and thus can be parallelised.
-
-\emph{Loop permutation} is a special subset of unimodular transformations, where the loops inside a loop nest are rearranged.
-\TODO{I'm not entirely sure what the point is.}
-
-\emph{Loop distribution} analyses the statements inside a loop and splits them out into multiple loops.
-This may allow some resulting loops to be executed in parallel.
 

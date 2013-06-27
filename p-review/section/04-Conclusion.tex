@@ -1,2 +1,9 @@
 \section{Conclusion}
 
+Nested data parallelism is a relatively mature field, but so far it is unable to beat the performance of hand-written C code.
+Recent advancements such as flow fusion\cite{lippmeier2013flow} and SIMD support for stream fusion\cite{mainland2013haskell}
+continue to converge.
+It is unclear, however, whether fusion alone will be able to fix the fundamental memory space problems with flattening\cite{lippmeier2012work}.
+
+Improvements to nested data parallelism such as vectorisation avoidance\cite{keller2012vectorisation} and work efficient replication\cite{lippmeier2012work}
+show promise, and further improvements could be made.

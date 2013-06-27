@@ -19,3 +19,8 @@ an optimising compiler is able to reorder expressions to gain better performance
 without any risk of changing the meaning of the program.
 From an engineering perspective also, the separation of side-effects from pure computation leads to clearer, easier to understand and verify code.
 
+This document aims to review the current state of automatic parallelism techniques, nested data parallelism in particular,
+and the optimisations required to get them running at acceptable speeds.
+My overall dream is to have parallel programs that are easier to write, and execute much faster than their C equivalents.
+So far only the first of those dreams has been realised, with Data Parallel Haskell (DPH)
+being able to express data parallel programs clearly and succinctly.
