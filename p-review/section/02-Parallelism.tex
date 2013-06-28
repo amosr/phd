@@ -1,10 +1,15 @@
 \section{Parallelism}
 Writing parallel programs that operate on a large amount of data can be difficult.
 To achieve the best performance on a multi-processor machine, programs must be written using low-level synchronisation techniques such as threads and locking.
-These methods are error prone, and improper use can lead to deadlocks and Heisenbugs: such errors are inherently hard to debug.
+These methods are error prone, and improper use can lead to bugs, such as deadlocks and \emph{heisenbugs}.
+In contrast to bugs in a sequential program, these bugs are often much harder to reproduce because of the delicate timing and communication between threads.
+So-called heisenbugs are a particularly hard class of bug, as they disappear and the program appears to work after debugging information is added.
 
-There are several techniques for making parallelism easier to take advantage of,
+There are many techniques for making parallelism easier to take advantage of,
 each with their own advantages and disadvantages.
+In general, the more restrictive a technique is, the better its performance can be
+as there is more knowledge about the program's structure.
+However, these restrictions come at the expense of making it harder to express some programs.
 We discuss three techniques:
 
 \begin{description}
@@ -18,7 +23,8 @@ but supports parallel operations over tree-like structures
 while keeping the load balanced over processors.
 
 \item[Feedback directed automatic parallelism]
-is a different beast: it uses profiling information from running the program
+is able to automatically parallelise any program,
+using profiling information from running the program
 to find the best places to introduce parallelism. 
 \end{description}
 
@@ -66,15 +72,16 @@ Data Parallel Haskell (DPH) is an implementation of nested data parallelism for 
 The original flattening transform is extended to support higher-order functions\cite{leshchinskiy2006higher}, a common pattern in Haskell,
 and arbitrary sum, product and recursive data types\cite{chakravarty2000more}.
 
-Instead of targeting vector machines like \nesl, DPH targets symmetric multi-processor (SMP) machines.
+Instead of targeting vector machines as \nesl does, DPH targets commodity symmetric multi-processor (SMP) machines.
 Fusion is performed to remove intermediate arrays, but care must be taken not to reduce parallelism\cite{chakravarty1999portable}.
-This is solved by partitioning the program into local operations,
-requiring only some small chunk of the array,
+This is solved by partitioning the program into local operations, requiring only some small chunk of the array,
 and global operations, requiring thread synchronisation\cite{keller1999distributed}.
 If only local operations are fused, crossing no global boundaries, no parallelism will be lost.
 
 Unlike \nesl, DPH does not require the entire program to be written using nested data parallelism,
 and supports partial vectorisation\cite{chakravarty2008partial}.
+This allows other parts of the program to be expressed naturally as sequential computations, such as drawing to the screen or reading data from disk,
+while the core computation can be run in parallel.
 
 The original flattening transform also increases the time and space complexity of the program,
 as flattening causes data to be replicated multiple times,

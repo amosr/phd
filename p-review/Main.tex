@@ -39,7 +39,7 @@
 \renewcommand{\headrulewidth}{0pt}
 
 \author{Amos Robinson, 3400438}
-\title{Stream fission for a good runtime}
+\title{Nested data parallelism in Haskell}
 
 \begin{document}
 
@@ -57,10 +57,10 @@
 \newcommand{\nesl}{{\sc Nesl}}
 \newcommand{\vcode}{{\sc Vcode}}
 
-\include{section/01-Introduction}
-\include{section/02-Parallelism}
-\include{section/03-Loop}
-\include{section/04-Conclusion}
+\input{section/01-Introduction}
+\input{section/02-Parallelism}
+\input{section/03-Loop}
+\input{section/04-Conclusion}
 
 % \chapter{Literature Review}
 
@@ -80,6 +80,6 @@
 \addcontentsline{toc}{section}{References}
 %\bibliographystyle{abbrv}
 \bibliographystyle{apalike}
-\bibliography{../bibs/Main,../bibs/loops,../bibs/ndp,../bibs/parteval,../bibs/series,../bibs/streams,../bibs/types,../bibs/fusion,../bibs/flat}
+\bibliography{../bibs/Main,../bibs/loops,../bibs/ndp,../bibs/parteval,../bibs/series,../bibs/streams,../bibs/types,../bibs/fusion,../bibs/flat,../bibs/alias}
 
 \end{document}
