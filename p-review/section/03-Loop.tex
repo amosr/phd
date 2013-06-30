@@ -1,7 +1,7 @@
 \section{Optimisations}
 
 While the flattening transform for nested data parallelism is quite simple,
-it alone cannot achieve performance that competes with that of hand-written C code.
+it alone cannot achieve performance that competes with that of hand-optimised C code.
 This section discusses the optimisations required to get such performance.
 Most of these optimisations are general purpose, and applicable to not only nested data parallel programs.
 
@@ -110,7 +110,7 @@ Constructor specialisation is also a generalisation of another technique, worker
 that creates a specialised worker function that operates on unboxed data structures.
 
 Excessive specialisation is also a risk, as specialisation increases the code size, potentially leading to longer compilation times and worse cache performance when a loop's code doesn't fit into the cache.
-I have been able to fix this excessive specialisation in the Glasgow Haskell Compiler by first attempting to \emph{seed} the specialisation with the call patterns the function is first called with.
+I have been able to reduce this excessive specialisation in the Glasgow Haskell Compiler by first attempting to \emph{seed} the specialisation with the call patterns the function is first called with.
 This reduces the number of specialisations to those that will actually be used, instead of generating all possible specialisations.
 
 Other forms of constructor specialisation / supercompilation have been developed that are able to rewrite multiple recursive calls into a single recursion\cite{burstall1977transformation}.

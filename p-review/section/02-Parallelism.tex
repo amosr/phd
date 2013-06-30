@@ -7,7 +7,7 @@ So-called heisenbugs are a particularly hard class of bug, as they disappear and
 
 There are many techniques for making parallelism easier to take advantage of,
 each with their own advantages and disadvantages.
-In general, the more restrictive a technique is, the better its performance can be
+In general, the more restrictive a technique is, the easier it is to achieve adequate performance
 as there is more knowledge about the program's structure.
 However, these restrictions come at the expense of making it harder to express some programs.
 We discuss three techniques:
@@ -36,7 +36,8 @@ To ensure a balanced load across parallel computations, only regular structures 
 Programs are expressed using combinators such as @map@, @filter@, @sum@ and @fold@.
 
 Accelerate is an \emph{embedded domain-specific language} in Haskell, specifically for running parallel computations on graphics processors.
-As a restricted domain-specific language, it targets graphics processors\cite{chakravarty2011accelerating} and uses fusion to achieve speeds similar to CUDA\cite{mcdonell2013optimising}.
+As a restricted domain-specific language, it targets graphics processors\cite{chakravarty2011accelerating} and uses fusion to remove intermediate arrays.
+With these, and other optimisations, it is sometimes able to achieve speeds similar to hand-optimised CUDA code\cite{mcdonell2013optimising}.
 
 Repa is a Haskell library with combinator support for regular parallel array computations\cite{keller2010regular}.
 Type indices are used to distinguish between so-called \emph{delayed arrays} and \emph{manifest arrays}.
@@ -50,8 +51,8 @@ For these algorithms, flat data parallelism is insufficient.
 
 
 \subsection{Nested data parallelism}
-Nested data parallelism, as introduced in a seminal paper by Blelloch\cite{blelloch1990vector},
-uses a transform known as \emph{flattening} to convert nested parallelism into flat data parallelism
+Nested data parallelism, as introduced in a seminal paper\cite{blelloch1990vector},
+uses a transform known as \emph{flattening} to convert nested data parallelism into flat data parallelism
 while maintaining a balanced load across processors.
 
 A language specifically for nested data parallelism, \nesl\cite{blelloch1995nesl},
@@ -63,20 +64,20 @@ but it is not a general purpose language and does not support higher-order funct
 
 Attempts have been made to introduce nested data parallelism to imperative languages such as Fortran\cite{au1997enlarging}.
 These have the benefit of taking advantage of existing compiler optimisations.
-The problem with targeting an impure language, though,
+The problem with targeting an impure language, however,
 is that arbitrary expressions may perform side-effects.
-This severely limits the places where parallelism may be introduced, as performing side-effects in parallel can change the meaning of the program.
+This severely limits the places where parallelism may be introduced, as performing unknown side-effects in parallel will likely change the meaning of the program.
 
 \subsubsection{Data Parallel Haskell}
 Data Parallel Haskell (DPH) is an implementation of nested data parallelism for Haskell\cite{chakravarty2007data}.
 The original flattening transform is extended to support higher-order functions\cite{leshchinskiy2006higher}, a common pattern in Haskell,
-and arbitrary sum, product and recursive data types\cite{chakravarty2000more}.
+and arbitrary Haskell types: sum, product and recursive data types\cite{chakravarty2000more}.
 
-Instead of targeting vector machines as \nesl does, DPH targets commodity symmetric multi-processor (SMP) machines.
+Instead of targeting vector machines as \nesl~does, DPH targets commodity symmetric multi-processor (SMP) machines.
 Fusion is performed to remove intermediate arrays, but care must be taken not to reduce parallelism\cite{chakravarty1999portable}.
 This is solved by partitioning the program into local operations, requiring only some small chunk of the array,
 and global operations, requiring thread synchronisation\cite{keller1999distributed}.
-If only local operations are fused, crossing no global boundaries, no parallelism will be lost.
+As long as only local operations are fused, crossing no global boundaries, no parallelism will be lost.
 
 Unlike \nesl, DPH does not require the entire program to be written using nested data parallelism,
 and supports partial vectorisation\cite{chakravarty2008partial}.
@@ -100,7 +101,7 @@ Array fusion can often remove these intermediate structures, but fusion relies h
 which may not always occur due to sharing. Excessive inlining can also cause code blowup in the compilation process,
 leading to long compile times.
 Instead of vectorising an entire program and then relying on fusion to remove intermediate arrays,
-identifying scalar operations and not vectorising them is less fragile.
+identifying scalar operations and not vectorising them has proven to be less fragile.
 
 
 
