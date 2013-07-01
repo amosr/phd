@@ -23,20 +23,21 @@ and functional array fusion\cite{chakravarty2001functional, chakravarty2003appro
 These techniques all work by fusing adjacent producers and consumers together.
 This relies on general purpose optimisations such as inlining to bring producers and consumers closer. 
 
-A recent paper shows the possibility of fusion producing SIMD-vector instructions\cite{bik2004software} that operate on multiple elements at a time\cite{mainland2013haskell}.
-This allows significant speedups.
-
 There is a balance between inlining and code blowup, however.
 Too much inlining and the code will become too large, leading to long compilation times and poor cache performance when a loop kernel does not fit in the instruction line.
 As short-cut fusion is a simple local transformation, it can be implemented using general rewrite rule facilities\cite{jones2001playingby} without modifying the compiler.
 The local nature of short-cut fusion comes at a price, however, when a single producer has multiple consumers.
 As the producer cannot be inlined into both consumers without potentially duplicating work, the producer must be reified in memory.
 
+A recent paper shows the possibility of fusion producing SIMD-vector instructions\cite{bik2004software} that operate on multiple elements at a time\cite{mainland2013haskell}.
+This allows significant speedups.
+
+
 \subsubsection{Flow fusion}
 
 A new method that we have been working on is known as flow fusion\cite{lippmeier2013flow}.
 It uses a more global analysis and can deal with branching dataflows that short-cut fusion cannot.
-It analyses an entire function of combinator-based `loops' at a time and schedules the combinators into as few loops as possible.
+It analyses an entire function of combinator-based array operations at a time and schedules the combinators into as few loops as possible.
 This analysis is based on Waters' series expressions\cite{waters1991automatic}, using Shivers' loop anatomy\cite{shivers2005anatomy} to merge skeleton code for loops.
 This method is similar to compilation for dataflow languages\cite{johnston2004advances}.
 
@@ -76,7 +77,7 @@ This problem does not occur in a pure language, as all functions are assured to 
 \subsection{Alias analysis}
 
 Another problem that keeps high-performance Haskell from competing with C code is incomplete alias analysis.
-After converting variables references to memory reads and writes, superfluous memory traffic can be reduced by storing scalar variables in registers.
+After converting variable references to memory reads and writes, superfluous memory traffic can be reduced by storing scalar variables in registers.
 This requires that no other variables reference the same memory location, or \emph{alias} with each other,
 as converting aliasing variables to registers can change the meaning of the program.
 Alias analysis is a low-level optimisation that finds sets of variables known \emph{not} to alias, and removes superfluous memory reads and writes to them.

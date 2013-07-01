@@ -7,7 +7,7 @@ It is unclear, however, whether fusion alone will be able to fix the fundamental
 
 Improvements to nested data parallelism such as vectorisation avoidance\cite{keller2012vectorisation}
 and work efficient replication\cite{lippmeier2012work} show promise.
-Further improvements could be made, however, such as avoiding the replication issue altogether when the same nested workload is shared across all threads.
+Further improvements could be made, however, such as avoiding the replication issue altogether when the same nested workload is shared across all worker threads.
 
 Our new fusion system, flow fusion\cite{lippmeier2013flow}, solves problems with existing fusion such as branching dataflow,
 but can only handle specific cases such as \emph{on-line computations} where unbounded buffers are not necessary.

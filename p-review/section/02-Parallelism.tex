@@ -3,7 +3,7 @@ Writing parallel programs that operate on a large amount of data can be difficul
 To achieve the best performance on a multi-processor machine, programs must be written using low-level synchronisation techniques such as threads and locking.
 These methods are error prone, and improper use can lead to bugs, such as deadlocks and \emph{heisenbugs}.
 In contrast to bugs in a sequential program, these bugs are often much harder to reproduce because of the delicate timing and communication between threads.
-So-called heisenbugs are a particularly hard class of bug, as they disappear and the program appears to work after debugging information is added.
+So-called heisenbugs are a particularly hard class of bug, as they disappear and the program appears to work only when debugging information is added.
 
 There are many techniques for making parallelism easier to take advantage of,
 each with their own advantages and disadvantages.
