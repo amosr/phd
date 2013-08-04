@@ -4,7 +4,8 @@ module HandFused2 where
 import qualified Data.Vector.Unboxed         as V
 import qualified Data.Vector.Unboxed.Mutable as M
 
-import Control.Monad.ST (runST)
+-- import Control.Monad.ST (runST)
+import System.IO.Unsafe
 
 import Common
 
@@ -18,7 +19,7 @@ cull :: Matrix44 -- ^ Projection matrix
      -> V.Vector Tri
      -> V.Vector Elt
 cull !mtx !rays !tris
- = runST
+ = unsafeDupablePerformIO -- runST
  $ do   !u  <- M.unsafeNew nrays
         !ts <- M.unsafeNew ntris
         fill_tris SPEC 0 ts
@@ -69,4 +70,12 @@ cull !mtx !rays !tris
 
    | otherwise
    =    return acc
+
+
+
+foldl :: (a -> b -> a) -> a -> [b] -> a
+foldl k z xs = go xs z
+ where
+  go []     acc = acc
+  go (x:xs) acc = go xs (k acc x)
 

@@ -1,0 +1,18 @@
+\subsection{Improvement theory}
+
+Improvement theory\cite{sands1998improvement}
+classifies program transformations to those that are actually optimisations.
+In order to be an optimisation, the result of a transformation must be less than or equally as expensive as the original program.
+It must also evaluate to the same result, in that it cannot change the meaning of the program.
+
+In improvement theory, each expression is annotated with a cost, for example the number of function calls required to evaluate the expression.
+This cost is not simply syntactic, as one function call may require more function calls, and those must be counted as well.
+
+Lazy, or call-by-need, evaluation works by deferring evaluation of expressions until they are required.
+Once expressions have been evaluated once, the value is cached and subsequent evaluations will use this cached value.
+This is an improvement when not all expressions are used,
+and can also reduce space usage as only part of a value needs to be stored in memory at any point.
+
+Improvement theory has been extended to deal with lazy, or call-by-need, languages\cite{moran1999improvement,gustavsson1999foundation,gustavsson2001possibilities}.
+The complication with this is that an expression will not be evaluated more than once.
+Thus, the cost of an expression must only take into account the first evaluation of an expression.

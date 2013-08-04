@@ -1,0 +1,119 @@
+\subsection{Optimisations}
+
+While the flattening transform for nested data parallelism is quite simple,
+it alone cannot achieve performance that competes with that of hand-optimised C code.
+This section discusses the optimisations required to get such performance.
+Most of these optimisations are general purpose, and applicable to not only nested data parallel programs.
+
+Optimisations for pure languages can make use of the knowledge that arbitrary expressions are side-effect free.
+Two classes of optimisations are particularly important for nested data parallel programs in pure languages: fusion and constructor specialisation.
+Impure languages must be more conservative in the transformations they apply, in order to preserve the meaning of the program.
+
+
+\subsubsection{Fusion}
+
+Fusion merges array producers with consumers, removing the need to allocate intermediate arrays in memory.
+
+
+\paragraph{Short-cut fusion}
+
+Short-cut fusion includes techniques such as stream fusion\cite{coutts2007streamfusion},
+@fold@/@build@ fusion\cite{gill1993shortcut}
+and functional array fusion\cite{chakravarty2001functional, chakravarty2003approach}.
+These techniques all work by fusing adjacent producers and consumers together.
+This relies on general purpose optimisations such as inlining to bring producers and consumers closer. 
+
+There is a balance between inlining and code blowup, however.
+Too much inlining and the code will become too large, leading to long compilation times and poor cache performance when a loop kernel does not fit in the instruction line.
+As short-cut fusion is a simple local transformation, it can be implemented using general rewrite rule facilities\cite{jones2001playingby} without modifying the compiler.
+The local nature of short-cut fusion comes at a price, however, when a single producer has multiple consumers.
+As the producer cannot be inlined into both consumers without potentially duplicating work, the producer must be reified in memory.
+
+A recent paper shows the possibility of fusion producing SIMD-vector instructions\cite{bik2004software} that operate on multiple elements at a time\cite{mainland2013haskell}.
+This allows significant speedups.
+
+
+\paragraph{Flow fusion}
+
+A new method that we have been working on is known as flow fusion\cite{lippmeier2013flow}.
+It uses a more global analysis and can deal with branching dataflows that short-cut fusion cannot.
+It analyses an entire function of combinator-based array operations at a time and schedules the combinators into as few loops as possible.
+This analysis is based on Waters' series expressions\cite{waters1991automatic}, using Shivers' loop anatomy\cite{shivers2005anatomy} to merge skeleton code for loops.
+This method is similar to compilation for dataflow languages\cite{johnston2004advances}.
+As flow fusion is such a crucial part of this research, it is discussed in more detail later.
+
+
+\paragraph{Loop fusion and array contraction}
+
+Fusion in imperative languages is generally expressed as two stages:
+loop nests with the same index space are \emph{fused} together,
+then intermediate arrays are \emph{contracted} into scalars or smaller buffers.
+This requires a \emph{loop dependency graph}\cite{gao1993collective} to be created,
+to calculate which loops can be fused without changing the order of writes and reads to arrays.
+Loops may have their index spaces reversed or otherwise modified, in order to allow further fusion.
+Sarkar shows that the optimal loop configuration can be found with a two-colouring of a graph\cite{sarkar1991optimization}.
+
+Such optimisations may generally increase efficiency, but can in the worst case cause extra cache misses or register spilling.
+Loop fusion merges the bodies of two or more loops, which means there are often more local variables
+and memory references in the result, all contending for registers and cache.
+Some cache misses can be identified by looking at each pair of consecutive requests to the same element, and counting the number of distinct elements requested between the pair.
+This is called the \emph{reuse distance}\cite{song2004improving}.
+With controlled fusion, loops are only fused together if the maximum reuse distance does not exceed the cache size. 
+
+In cases where a successive loop iteration uses the output of the previous loop iteration, memory reads can be reduced by reusing the register value\cite{wang2013loop}.
+
+Unimodular matrices are used to find new execution orders of loops, where the original index order cannot be parallelised\cite{banerjee1993loop}.
+For example, a 2-d loop whose $(x,y)$th iteration depends on the output of its $(x-1,y-1)$th iteration cannot be trivially parallelised.
+If the execution order is changed, however, the several threads could work diagonally through the array at the same time.
+
+These imperative optimisations require all loops to only include trivially non-side-effecting statements.
+If loops had arbitrary function calls, the compiler cannot generally know whether these function calls had side-effects,
+and would not be certain that reordering the calls would be safe.
+This problem does not occur in a pure language, as all functions are assured to be side-effect free.
+
+
+\subsubsection{Alias analysis}
+
+Another problem that keeps high-performance Haskell from competing with C code is incomplete alias analysis.
+After converting variable references to memory reads and writes, superfluous memory traffic can be reduced by storing scalar variables in registers.
+This requires that no other variables reference the same memory location, or \emph{alias} with each other,
+as converting aliasing variables to registers can change the meaning of the program.
+Alias analysis is a low-level optimisation that finds sets of variables known \emph{not} to alias, and removes superfluous memory reads and writes to them.
+
+This can give great improvements in the runtime of loop kernels, as the majority of time would otherwise be spent updating local variables\cite{clifton2012optimisations}.
+However, functions generally do not know whether their arguments will alias, so local alias analysis is in some cases doomed to be pessimistic.
+
+Another method is to introduce distinctness witnesses\cite{ma2012type} as proof that two variables will not alias.
+These witnesses are introduced and inferred automatically by the compiler, and passed as arguments to functions.
+The functions can then be optimised with full assurance that arguments will not alias, leading to faster code.
+
+The Glasgow Haskell Compiler currently only performs rudimentary alias analysis, which leads to problems with tight loops
+where the superfluous memory operations outweigh the loop time.
+
+\subsubsection{Constructor specialisation}
+
+Constructor specialisation removes superfluous allocations from loops\cite{bechet1994limix},
+where the allocation is used and thrown away immediately at the start of the next iteration.
+
+In a purely functional language such as Haskell, loops are often expressed as recursive functions, with mutable loop variables becoming function arguments. 
+Without mutation, however, any change to the loop variables must be allocated as new objects\cite{peyton2007call}.
+This is particularly wasteful when objects are allocated only to be used once in the next iteration, then thrown away.
+A solution to this is to specialise recursive functions to remove unnecessary allocation and pattern-matching of constructors.
+When a recursive function pattern matches or destructs one of its arguments and makes a recursive call with a constructor of that argument,
+the recursive call can be specialised for that particular argument so no allocation or unboxing is necessary.
+
+This has been implemented for both pure and impure languages such as Haskell and ML\cite{thiemann1993avoiding, mogensen1993constructor}.
+
+This kind of compile-time evaluation is also key to modern techniques such as supercompilation\cite{bolingbroke2011supercomp}.
+Constructor specialisation is also a generalisation of another technique, worker-wrapper transform\cite{gill2009worker},
+that creates a specialised worker function that operates on unboxed data structures.
+
+Excessive specialisation is also a risk, as specialisation increases the code size, potentially leading to longer compilation times and worse cache performance when a loop's code doesn't fit into the cache.
+I have been able to reduce this excessive specialisation in the Glasgow Haskell Compiler by first attempting to \emph{seed} the specialisation with the call patterns the function is first called with.
+This reduces the number of specialisations to those that will actually be used, instead of generating all possible specialisations.
+
+Other forms of constructor specialisation / supercompilation have been developed that are able to rewrite multiple recursive calls into a single recursion\cite{burstall1977transformation}.
+This has impressive results, but it requires user intervention and relies on domain knowledge such as commutativity of addition.
+
+
+

@@ -1,0 +1,305 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{alltt}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{attrib}
+\usepackage{cite}
+\usepackage{color}
+\usepackage{fancyhdr}
+\usepackage{fancyvrb}
+\usepackage{float}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{xspace}
+\usepackage{style/code}
+\usepackage{style/utils}
+\usepackage{url}
+% \usepackage{times}
+\newcommand{\at}{\texttt{@}}
+\makeatactive
+
+\renewcommand{\labelenumii}{\theenumii}
+\renewcommand{\theenumii}{\theenumi.\arabic{enumii}.}
+
+\floatstyle{plain}
+\newfloat{codefig}{H}
+
+\newcommand{\codefigend}{\vspace{-45pt}}
+
+
+% \include{template/template}
+
+
+\pagestyle{fancy}
+%\markboth{Amos Robinson}{3400438}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{Amos Robinson, 3400438}
+\cfoot{}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\author{Amos Robinson, 3400438}
+\title{Fixing flattening's space complexity with flow fusion}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+%\maketitle
+\begin{abstract}
+Writing parallel programs is fraught with danger; deadlocks, heisenbugs and race conditions lurk at every corner case.
+To alleviate the programmer from this pain, techniques such as flat data parallelism and nested data parallelism can be used.
+Flat data parallelism can be implemented quite efficiently, but only supports regular shaped arrays such as rectangles.
+Nested data parallelism removes this restriction, but requires quite a bit more work to implement efficiently.
+
+The flattening transform is core to translating nested data parallelism to flat parallelism.
+However, in some cases flattening can ruin the space and work complexity of a program.
+The work complexity problem has since been solved by using a clever representation of arrays, but the space complexity problem remains.
+
+We believe that our new development, flow fusion, will be able to solve some instances of the space complexity problem.
+In addition, we aim to investigate and research the extra fusion required to solve the space complexity problem completely.
+If the problem cannot be solved completely, the cases that cannot be solved will be formalised and compiler warnings issued in those cases.
+\end{abstract}
+\pagebreak
+
+% actual content must be 1.5line-spacing. make ToC 1.5 too, because normal looks silly if spanning *just* two pages
+\onehalfspacing
+\tableofcontents
+
+\newcommand{\nesl}{{\sc Nesl}\xspace}
+\newcommand{\vcode}{{\sc Vcode}\xspace}
+
+% \section{Submission cover sheet}
+\includegraphics{submissioncoversheet.png}
+
+\input{section/01-Introduction}
+
+\pagebreak
+\section{Literature review}
+\input{section/02-Parallelism}
+\input{section/03-Loop}
+\input{section/04-Improvement}
+
+\subsection{Flow fusion}
+
+Flow fusion\cite{lippmeier2013flow} is an array fusion method for functional programs
+that uses a more global analysis than short-cut fusion.
+As a result, it can fuse more interesting dataflow graphs than just the simple straight-line graphs that short-cut fusion can.
+It analyses an entire function of combinator-based array operations at a time and schedules the combinators into as few loops as possible.
+This analysis is based on Waters' series expressions\cite{waters1991automatic}, using Shivers' loop anatomy\cite{shivers2005anatomy} to merge skeleton code for loops.
+This method is similar to compilation for dataflow languages\cite{johnston2004advances}.
+
+As flow fusion is based on Waters' series expressions\cite{waters1991automatic},
+has very similar restrictions on the programs that can be fused:
+\begin{itemize}
+\item preorder: processes inputs and outputs one at a time in ascending order;
+\item any cycles must consist only of on-line computations.
+\end{itemize}
+
+The preorder restriction is implemented by requiring that all library functions are preorder.
+Sadly, this means that many interesting and useful functions
+such as @reverse@, @backpermute@ and indexing cannot be implemented,
+as they require random access to the array.
+
+On-line computations are those that consume elements from all input streams at the same time,
+and then immediately push to their output. 
+For example, @map@ and @zipWith@ are on-line as they operate by reading from input, call the mapping function, then produce an output element.
+Conversely, @filter@ and @sum@ are off-line;
+@filter@ may have to read multiple input elements before producing an output element,
+and @sum@ must read the entire input stream before producing its single output.
+
+Off-line computations are not necessarily bad, but mixing on-line and off-line can lead to off-line computations that require unbounded buffers.
+In these cases, we fall back to a na\"{i}ve stream fusion system.
+
+
+It is conceivable that certain cases of non-preorder, off-line functions could be supported,
+in the case that one of their arguments was in fact a manifest or otherwise randomly accessible.
+For example, @reverse (map f input)@ ought to be supported if @input@ is a manifest array;
+it would simply loop through the @input@ array in reverse order, applying @f@ to each element.
+
+
+\subsection{Space and work complexity issues}
+
+It is a well known problem that flattening, the main idea behind nested data parallelism\cite{blelloch1995nesl}, can cause significantly worse space and work complexity\cite{lippmeier2012work,spoonhower2007semantic}.
+The aim of flattening is to transform a nested data parallelism into flat data parallelism,
+while maintaining load balancing across processors.
+
+While the work complexity problem has been fixed\cite{lippmeier2012work}, the space problem still persists.
+For example, given an array of points, find the maximum distance between all pairs of points.
+For each point, we calculate the distance between it and every point, leading to $n$ arrays of $n$ distances, or $n^2$ distances.
+We then find the maximum of all these distances.
+
+The unflattened program would allocate $n$ arrays of size $n$ sequentially,
+leading to a maximum space usage of only $n$.
+However, flattening causes the $n^2$ array to be allocated in memory in its entirety.
+Correct fusion would solve this case by fusing the $n^2$ array with @maximum@.
+It is unknown, however, whether all such space complexity flaws can be solved by fusion alone.
+
+
+\pagebreak
+\section{Methodology}
+
+\subsection{Instances of the space problem}
+The first thing is to classify the different instances of the space complexity problem, with example programs.
+As mentioned earlier, flow fusion can fully fuse programs that satisfy certain on-line restrictions\cite{lippmeier2013flow}.
+With these programs, we should be able to get a rough idea of how much of the space complexity problem is fixed by flow fusion.
+These examples are not strictly necessary, but will help to build an intuition about the problem.
+
+We then want a more rigorous definition of the scope of the problem.
+Working backwards from the restrictions of flow fusion,
+imagine reversing the flattening. 
+The restrictions on the source language are those that, after flattening, only produce flow fusion-able programs.
+
+We then need to find ways of expanding this set, or loosening the restrictions.
+For example, off-line combinators like @reverse@ and indexing cannot be fused using flow fusion as they require random access to the input.
+While fusion cannot be performed for these in general, certain cases such as reversing over manifest arrays, or simple @map@s or @filter@s of manifest arrays could plausibly be fused optimally.
+This intuition must be formalised; perhaps in a similar way to how Repa's type indices\cite{lippmeier2012guiding} separate delayed arrays from manifest arrays.
+
+There is another problem with manifest arrays not being explicit;
+sometimes, an unfused program will run faster when aggressive inlining and fusion cause work to be duplicated.
+In cases like this, it would be better for the programmer to explicitly indicate which arrays should be manifest and which should be fused away,
+rather than obtuse @NOINLINE@ pragmas.
+
+
+\subsection{Coq theorem prover}
+Proofs of correctness are particularly important for optimisations.
+An incorrect optimisation may actually make a program more expensive, or change the meaning of the program.
+Neither of these errors are acceptable, but sadly compiler transforms can be quite complex and subtle.
+
+For this reason, optimisations should be proved to be correct, for example using improvement theory\cite{sands1998improvement}.
+Pen and paper proofs can also lead to problems as it becomes tempting to cut corners,
+leading to half-baked or incorrect proofs.
+
+The Coq theorem prover is an interactive theorem prover based on a dependently typed programming language\cite{harper2012practical}.
+Interactive theorem provers have the advantage of disallowing such cheating or corner-cutting that proliferates in paper proofs,
+as they are machine checked to be valid.
+Coq has been used to verify the implementation of an optimising C compiler, CompCert\cite{leroy2012compcert}.
+A similar theorem prover, Isabelle, has also been used to formalise higher-order flattening\cite{leshchinskiy2005higher}.
+
+I believe that formal methods such as proofs will only become more necessary as programs continue to become more complicated.
+Formalising such transforms and proving them correct will lead to fewer bugs in the implementation.
+As these proofs improve the quality of software, I feel it is my responsibility to use these methods wherever applicable.
+
+\subsection{Current progress}
+
+So far, most of my effort has been directed at reviewing the current state of nested data parallelism and high performance functional computing in general.
+
+I have fixed some code blowup problems with the SpecConstr optimisation, and have started writing an article on this for the Monad Reader.
+I also intend on giving a talk at the 2013 Haskell Implementor's Workshop in Boston on my SpecConstr work.
+
+I have been working on the implementation of flow fusion, writing the compiler plugin that performs the fusion, and helped write the paper\cite{lippmeier2013flow}.
+
+I have also spent quite a bit of time practicing and learning to write proofs in Coq.
+This has also resulted in me learning about the formal definitions of programming languages and their type systems\cite{harper2012practical},
+which ties in with a course I did on Concepts of Programming Languages, 3161.
+
+\pagebreak
+\section{Research plan}
+
+\paragraph{Semester 1, 2013}
+\begin{itemize}
+\item Literature review
+\item Initial flow fusion work
+\item Flow fusion paper accepted to Haskell Symposium\cite{lippmeier2013flow}
+\item SpecConstr improvements
+\end{itemize}
+
+\paragraph{Semester 2, 2013}
+\begin{itemize}
+\item Research proposal
+\item Attend ICFP and Haskell Symposium
+\item Submit talk for Haskell Implementors' Workshop
+\item Write article on SpecConstr work for Monad reader
+\item Create and classify instances of space complexity problem
+\item Low-level optimisations to DPH such as gang scheduling
+\end{itemize}
+
+\paragraph{Semester 1, 2014}
+\begin{itemize}
+\item Formalise which parts of space problem flow fusion does solve
+\item Further work on integrating flow fusion with DPH
+\item ICFP submission deadline
+\end{itemize}
+
+\paragraph{Semester 2, 2014}
+\begin{itemize}
+\item Formalise flow fusion in Coq
+\item Extension of flow fusion to deal with @reverse@ and similar
+\item Implement compiler warnings for unfusable programs
+\end{itemize}
+
+\paragraph{Semester 1, 2015}
+\begin{itemize}
+\item Benchmarks
+\item Low-level optimisations based on benchmarks
+\item Writing
+\item ICFP submission deadline
+\end{itemize}
+
+\paragraph{Semester 1, 2015}
+\begin{itemize}
+\item Writing
+\item Submission
+\end{itemize}
+
+
+% \pagebreak
+% \section{Current progress}
+
+\pagebreak
+\input{section/05-Conclusion}
+
+\pagebreak
+\section{Draft thesis chapter outline}
+
+\begin{enumerate}
+\item Introduction
+  \begin{enumerate}
+  \item Data parallelism
+  \item Fusion
+  \item Improvement theory
+  \end{enumerate}
+
+\item Data Parallel Haskell
+  \begin{enumerate}
+  \item Vectorisation
+  \item Flattening
+  \end{enumerate}
+
+\item Flow fusion
+  \begin{enumerate}
+  \item Series expressions
+  \item Input requirements
+  \item Rate inference
+  \end{enumerate}
+
+\item Fusing flattened programs
+  \begin{enumerate}
+  \item The set of perfectly fusible programs
+  \item Partial fusion for the rest
+  \end{enumerate}
+
+\item Conclusion
+\item Appendices
+  \begin{enumerate}
+  \item Proofs
+  \item Source
+  \end{enumerate}
+\item References
+\end{enumerate}
+
+% think the bib can be normal line-spacing
+%\singlespacing
+\pagebreak
+
+\addcontentsline{toc}{section}{References}
+%\bibliographystyle{abbrv}
+\bibliographystyle{apalike}
+\bibliography{../bibs/Main,../bibs/loops,../bibs/ndp,../bibs/parteval,../bibs/series,../bibs/streams,../bibs/types,../bibs/fusion,../bibs/flat,../bibs/alias,../bibs/improvement,../bibs/spaceflaw}
+
+\end{document}

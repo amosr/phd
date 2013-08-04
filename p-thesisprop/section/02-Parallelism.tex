@@ -1,4 +1,4 @@
-\section{Parallelism}
+\subsection{Parallelism}
 Writing parallel programs that operate on a large amount of data can be difficult.
 To achieve the best performance on a multi-processor machine, programs must be written using low-level synchronisation techniques such as threads and locking.
 These methods are error prone, and improper use can lead to bugs, such as deadlocks and \emph{heisenbugs}.
@@ -29,7 +29,7 @@ to find the best places to introduce parallelism.
 \end{description}
 
 
-\subsection{Flat data parallelism}
+\subsubsection{Flat data parallelism}
 Flat data parallelism is a restricted form of data parallelism that disallows nested parallelism:
 only the top-most computation is performed in parallel.
 To ensure a balanced load across parallel computations, only regular structures such as rectangular arrays can be used.
@@ -50,7 +50,7 @@ Many algorithms are more naturally expressed using nested parallelism, such as t
 For these algorithms, flat data parallelism is insufficient.
 
 
-\subsection{Nested data parallelism}
+\subsubsection{Nested data parallelism}
 Nested data parallelism, as introduced in a seminal paper\cite{blelloch1990vector},
 uses a transform known as \emph{flattening} to convert nested data parallelism into flat data parallelism
 while maintaining a balanced load across processors.
@@ -68,7 +68,7 @@ The problem with targeting an impure language, however,
 is that arbitrary expressions may perform side-effects.
 This severely limits the places where parallelism may be introduced, as performing unknown side-effects in parallel will likely change the meaning of the program.
 
-\subsubsection{Data Parallel Haskell}
+\paragraph{Data Parallel Haskell}
 Data Parallel Haskell (DPH) is an implementation of nested data parallelism for Haskell\cite{chakravarty2007data}.
 The original flattening transform is extended to support higher-order functions\cite{leshchinskiy2006higher}, a common pattern in Haskell,
 and arbitrary Haskell types: sum, product and recursive data types\cite{chakravarty2000more}.
@@ -124,7 +124,7 @@ identifying scalar operations and not vectorising them has proven to be less fra
 
 
 
-\subsection{Feedback directed automatic parallelism}
+\subsubsection{Feedback directed automatic parallelism}
 
 Automatic parallelism, as in Mercury\cite{bone2010automatic},
 is able to parallelise more general programs than nested data parallelism,

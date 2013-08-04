@@ -1,0 +1,35 @@
+\section{Conclusion}
+
+Nested data parallelism is a relatively mature field, but so far it is unable to beat the performance of hand-written C code.
+Recent advancements such as flow fusion\cite{lippmeier2013flow} and SIMD support for stream fusion\cite{mainland2013haskell}
+continue to converge.
+It is unclear, however, whether fusion alone will be able to fix the fundamental memory space problems with flattening\cite{lippmeier2012work}.
+
+Improvements to nested data parallelism such as vectorisation avoidance\cite{keller2012vectorisation}
+and work efficient replication\cite{lippmeier2012work} show promise.
+Further improvements could be made, however, such as avoiding the replication issue altogether when the same nested workload is shared across all worker threads.
+
+Our new fusion system, flow fusion\cite{lippmeier2013flow}, solves problems with existing fusion such as branching dataflow,
+but can only handle specific cases such as \emph{on-line computations} where unbounded buffers are not necessary.
+Such cases are common, but by no means exclusive.
+For example, consider that reversing an array requires reifying the entire array in memory before being able to retrieve the first element.
+Further work is required to gain the best possible fusion in this case, instead of reverting to stream fusion completely.
+
+With knowledge of the restrictions on flow fusion programs,
+we will be able to fix many instances of the space complexity problem.
+With improvements to fusion, hopefully many more programs will be fused correctly.
+Improvements such as compiler warnings for unfusable programs will also make
+it obvious whether a program will be optimised sufficiently,
+without having to resort to benchmarks and reading core or assembly code.
+
+Other problems with fusion are that excessive fusion can cause register and cache contention\cite{song2004improving}.
+While it is true that in these cases, fusion is still better than nothing,
+the ideal solution may involve some kind of loop tiling\cite{pike2002better},
+where each array is processed in buffers that fit in cache.
+
+Incomplete alias analysis is a low-level issue that only becomes apparent once the rest of the program is perfect.
+In other programs, runtime is more often dominated by lack of fusion and memory usage issues.
+While runtime would definitely benefit from better alias analysis, my time will be better spent focussing on higher-level issues,
+such as the space complexity problem.
+
+
